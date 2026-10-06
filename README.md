@@ -300,21 +300,3 @@ Giảm delivery time và return do sizing.
 
 ---
 
-# 📈 Dashboard Structure
-
-```text
-                    E-commerce Analytics
-                           │
-          ┌────────────────┼────────────────┐
-          │                │                │
-      Customer           Sales          Operations
-          │                │                │
-      Retention        Revenue        Inventory
-      RFM              AOV            Logistics
-      Churn            Margin         Returns
-          │                │                │
-          └────────────────┼────────────────┘
-                           │
-                    Business Insights
-                           │
-                    Recommendations
