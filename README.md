@@ -85,7 +85,7 @@ Prioritize customer groups with:
 - High Purchase Frequency
 - Low Recency
 
-<img width="1343" height="691" alt="Customer Dashboard" src="https://github.com/user-attachments/assets/c615d1ff-c9a5-4518-bb22-6f4bb8f19bfc" />
+
 
 ---
 
@@ -125,7 +125,7 @@ for customers with high purchase frequency and AOV.
 - Expand **Outdoor** if the category shows growth potential.
 - Re-evaluate **Casual** performance and adjust assortment/pricing.
 
-<img width="1318" height="701" alt="Sales Dashboard" src="https://github.com/user-attachments/assets/e6deef96-0416-4d7e-981d-82c9bf4a287c" />
+
 
 ---
 
@@ -172,7 +172,7 @@ For products with high inventory aging:
 
 can be used to clear inventory faster.
 
-<img width="1309" height="693" alt="Inventory Dashboard" src="https://github.com/user-attachments/assets/b3052d26-983c-4ef8-803c-92696d654000" />
+
 
 ---
 
@@ -205,7 +205,7 @@ can be used to clear inventory faster.
   - Return Rate
   - Cost per Order
 
-<img width="1370" height="747" alt="Logistics Dashboard" src="https://github.com/user-attachments/assets/0ce22572-ecab-4f8d-9b54-e3e0dfa6bb45" />
+
 
 ---
 
