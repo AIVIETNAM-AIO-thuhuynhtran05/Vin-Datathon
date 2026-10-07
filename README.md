@@ -49,7 +49,7 @@ The business is facing a **conversion and customer retention** problem, not simp
 
 In particular, acquisition relies heavily on **organic search and paid channels**, while retention-friendly channels such as **email and referral** remain underused.
 
-<img width="1488" height="766" alt="Overview Dashboard" src="https://github.com/user-attachments/assets/1814c8ac-752b-4912-a6d2-f212edd2646e" />
+
 
 ---
 
