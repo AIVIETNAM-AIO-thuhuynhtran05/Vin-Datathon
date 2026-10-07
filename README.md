@@ -58,6 +58,7 @@ Doanh nghiệp đang gặp vấn đề về **conversion và customer retention*
 ### 🔎 Key Findings
 
 - **62.64% registered users chưa phát sinh giao dịch**, cho thấy một lượng lớn người dùng rời khỏi funnel trước khi trở thành khách hàng.
+- **Số khách hàng đăng ký tiếp tục tăng nhưng số lượt mua lại giảm**, khiến khoảng cách giữa user đăng ký và khách mua hàng ngày càng lớn. Tỉ lệ chuyển đổi khách hàng thấp là điểm nghẽn chính của funnel.
 - Gần **48% customer base thuộc nhóm Never Purchased hoặc Lost**.
 - Retention giảm mạnh ngay từ **tháng thứ +1**, cho thấy doanh nghiệp chưa có cơ chế đủ mạnh để kích thích repeat purchase.
 - Customer Recency cao ở một bộ phận lớn khách hàng, phản ánh nguy cơ churn.
@@ -222,72 +223,135 @@ có thể được sử dụng để giải phóng inventory nhanh hơn.
 | 08 | Wrong Size is a major return reason | Opportunity to improve product information |
 | 09 | Organic Search & Social Media have high volume but lower AOV | Acquisition efficiency should be optimized |
 | 10 | Email has higher AOV but lower volume | Potential opportunity for targeted CRM investment |
+| 11 | Registrations keep rising while purchases decline | Low customer conversion: new users are not turning into buyers |
 
 ---
 
 # 🎯 Recommended Business Priorities
 
-Dựa trên các findings, doanh nghiệp nên ưu tiên theo thứ tự:
+Các priority được sắp xếp theo **mức độ ảnh hưởng đến doanh thu/lợi nhuận** và **tốc độ có thể triển khai**. Mỗi priority gồm: vấn đề (dựa trên findings), hành động cụ thể, bộ phận phụ trách, timeline và KPI đo lường.
 
-### 1️⃣ Improve Customer Retention
+> **Lưu ý:** Target là **đề xuất** dựa trên baseline trong dataset, cần được kiểm chứng bằng A/B test hoặc theo dõi theo tháng trước khi áp dụng chính thức. KPI ghi *"Đo từ dashboard"* là chỉ số chưa có baseline cụ thể, cần thiết lập trước khi triển khai.
 
-Tăng repeat purchase và giảm customer churn.
+### 🗺️ Roadmap Summary
 
-**Key KPIs:**
+| Priority | Vấn đề chính | Hành động trọng tâm | North-star KPI | Target đề xuất |
+|---|---|---|---|---|
+| 1️⃣ Conversion & Retention | Đăng ký tăng nhưng lượt mua giảm · 62.64% user chưa mua · ~48% Never Purchased/Lost | Funnel fix + welcome flow + win-back theo RFM | % khách Never Purchased/Lost | **48% → 40%** trong 12 tháng |
+| 2️⃣ Inventory Efficiency | DOS ~826 ngày · Inventory/Sales 1.15–1.18 | Dừng nhập SKU tồn lâu + thanh lý theo độ tuổi tồn kho | Days of Supply | **826 → < 365 ngày** trong 12 tháng |
+| 3️⃣ Promotion & Margin | Promotion trên ~38% đơn · Margin 22% → 14% | Targeted promotion + discount floor | Gross Margin | **14% → 18%** trong 12 tháng |
+| 4️⃣ Revenue Diversification | Streetwear ~80% lợi nhuận | Mở rộng Outdoor + tăng kênh Email | % lợi nhuận từ Streetwear | **80% → ≤ 70%** trong 12 tháng |
+| 5️⃣ Logistics & Returns | Delivery ~6 ngày · Wrong Size là lý do return nổi bật | Chuẩn hóa size guide + carrier scorecard | Average Delivery Time | **6 → 4 ngày** trong 6 tháng |
 
-- Repeat Purchase Rate
-- Retention Rate
-- Churn Rate
-- Customer Lifetime Value
-- Customer AOV
+---
+
+### 1️⃣ Improve Customer Conversion & Retention
+
+**Vì sao ưu tiên số 1:** Số khách hàng **đăng ký tăng nhưng lượt mua giảm**, tức là doanh nghiệp vẫn thu hút được người dùng mới nhưng không biến họ thành người mua. Traffic tăng nhưng conversion chỉ **~0.13%**, **62.64%** registered users chưa từng mua và retention rơi mạnh từ **tháng +1**. Doanh nghiệp đang mất khách ở cả hai đầu funnel: không chuyển đổi được user mới và không giữ được khách đã mua.
+
+| # | Hành động | Chi tiết triển khai | Owner | Timeline |
+|---|---|---|---|---|
+| 1.1 | **Tìm điểm rơi trong funnel** | Phân tích funnel **Đăng ký → Xem sản phẩm → Thêm giỏ → Checkout → Thanh toán** theo cohort tháng đăng ký để xác định bước mất nhiều user nhất, và ưu tiên sửa bước đó trước. | Data / E-commerce | Tháng 1 |
+| 1.2 | **Nhắc giỏ hàng bỏ dở** | Gửi email/push sau **1h** và **24h** cho user đã thêm giỏ nhưng chưa thanh toán, kèm ảnh sản phẩm và thông tin freeship. | CRM | Tháng 1 |
+| 1.3 | **Welcome flow cho user mới** | Email/push sau **24h** nếu đăng ký nhưng chưa mua: voucher **15% + Free Shipping**, hết hạn sau 7 ngày. Nhắc lại lần 2 sau 72h. | CRM / Marketing | Tháng 1 |
+| 1.4 | **Post-purchase journey** | Email ngày **+7** (gợi ý phối đồ, sản phẩm liên quan) và ngày **+21** (voucher cho đơn thứ 2) để kéo khách qua mốc tháng +1. | CRM | Tháng 1–2 |
+| 1.5 | **Win-back theo mốc recency** | Kích hoạt tự động ở **30 / 60 / 90 ngày** không mua, ưu đãi tăng dần theo mốc. Sau 90 ngày không phản hồi thì chuyển sang nhóm Lost và giảm tần suất gửi. | CRM | Tháng 2–3 |
+| 1.6 | **RFM segmentation hàng tháng** | Cập nhật RFM mỗi tháng trên Power BI, gắn mỗi segment với một campaign riêng (Champions → early access, At Risk → win-back, Hibernating → reactivation). | Data / CRM | Tháng 2 |
+| 1.7 | **VIP Tier Program** | Áp dụng cho **top 10% khách theo Monetary**: free shipping không giới hạn, early access sale, quà sinh nhật. | Marketing | Tháng 4–6 |
+
+| KPI | Baseline | Target đề xuất |
+|---|---|---|
+| Registered users chưa mua | 62.64% | **≤ 55%** sau 6 tháng |
+| Tỉ lệ user mua đơn đầu tiên trong 30 ngày sau đăng ký | Đo từ dashboard | Tăng đều qua từng cohort tháng |
+| Tăng trưởng lượt mua so với tăng trưởng đăng ký | Đăng ký tăng, lượt mua giảm | Lượt mua tăng cùng chiều với đăng ký |
+| Never Purchased + Lost | ~48% | **≤ 40%** sau 12 tháng |
+| Conversion Rate | ~0.13% | **≥ 0.18%** sau 6 tháng |
+| Month +1 Retention | Đo từ dashboard | **+5 điểm %** so với baseline |
+| Repeat Purchase Rate / CLV | Đo từ dashboard | Tăng theo quý |
+
+---
 
 ### 2️⃣ Improve Inventory Efficiency
 
-Giảm lượng vốn bị khóa trong slow-moving inventory.
+**Vì sao ưu tiên số 2:** DOS **~826 ngày** nghĩa là lượng hàng tồn đủ bán hơn 2 năm, trong khi inventory-to-sales duy trì **1.15–1.18**. Vốn đang bị khóa trong hàng tồn và áp lực markdown sẽ ngày càng lớn.
 
-**Key KPIs:**
+| # | Hành động | Chi tiết triển khai | Owner | Timeline |
+|---|---|---|---|---|
+| 2.1 | **Phân loại SKU theo độ tuổi tồn kho** | Chia SKU thành 4 nhóm: **< 90 ngày / 90–180 / 180–365 / > 365 ngày**, kết hợp ABC theo doanh thu. Đây là đầu vào cho mọi hành động phía sau. | Data / Merchandising | Tháng 1 |
+| 2.2 | **Dừng nhập hàng SKU tồn lâu** | Tạm dừng replenishment cho SKU có **DOS > 365 ngày**. Đặt reorder point dựa trên forecast nhu cầu **90 ngày** thay vì nhập theo thói quen. | Supply Chain | Tháng 1–2 |
+| 2.3 | **Thanh lý theo từng nhóm tuổi tồn** | Tồn 180–365 ngày: **flash sale / markdown 20–30%**. Tồn > 365 ngày: **clearance campaign**. | Merchandising / Marketing | Tháng 2–4 |
+| 2.4 | **Bundle hàng chậm bán + best-seller** | Ghép 1 slow-moving SKU với 1 best-seller cùng category, giảm giá trên tổng bundle thay vì từng món để bảo vệ giá best-seller. | Merchandising | Tháng 3–6 |
+| 2.5 | **Kênh B2B / Outlet** | Phần tồn > 365 ngày còn lại sau clearance: chuyển cho wholesale, B2B liquidation hoặc outlet. | Sales / Ops | Tháng 6–12 |
 
-- Days of Supply
-- Inventory Turnover
-- Stockout Rate
-- Overstock Rate
-- Inventory Aging
+| KPI | Baseline | Target đề xuất |
+|---|---|---|
+| Days of Supply | ~826 ngày | **< 500 ngày** sau 6 tháng · **< 365 ngày** sau 12 tháng |
+| Inventory-to-Sales Ratio | 1.15–1.18 | **≤ 1.0** |
+| % SKU tồn > 365 ngày | Đo từ dashboard | Giảm **50%** sau 12 tháng |
+| Stockout Rate (best-sellers) | Đo từ dashboard | Không tăng khi cắt giảm nhập hàng |
+
+---
 
 ### 3️⃣ Improve Promotion & Margin
 
-Chuyển từ mass discount sang **targeted promotion**.
+**Vì sao ưu tiên số 3:** Promotion xuất hiện trên **~38% đơn hàng** nhưng AOV giảm ở nhiều category khi có promotion, trong khi margin đã giảm từ **~22% xuống ~14%**. Discount đại trà đang làm giảm lợi nhuận mà không tăng giá trị đơn.
 
-**Key KPIs:**
+| # | Hành động | Chi tiết triển khai | Owner | Timeline |
+|---|---|---|---|---|
+| 3.1 | **Minimum order value** | Chỉ áp dụng voucher cho đơn **≥ AOV hiện tại + 15–20%** để promotion kéo AOV lên thay vì kéo xuống. | Marketing | Tháng 1 |
+| 3.2 | **Discount floor theo category** | Đặt mức giảm tối đa sao cho margin sau giảm vẫn **≥ 10%**; promotion vượt ngưỡng phải được duyệt riêng. | Finance / Merchandising | Tháng 1–2 |
+| 3.3 | **Targeted thay vì mass discount** | Chỉ gửi ưu đãi sâu cho segment cần kích hoạt (At Risk, New), không áp dụng cho Champions vốn đã mua đều. | CRM | Tháng 2–3 |
+| 3.4 | **Combo pricing & cross-sell** | Combo theo outfit (áo + quần + phụ kiện) cho nhóm có frequency và AOV cao, đặc biệt nhóm **25–44 tuổi**. | Merchandising | Tháng 3–6 |
+| 3.5 | **Đo Promotion ROI bằng holdout** | Giữ **10% khách không nhận promotion** làm control group để đo doanh thu tăng thêm thực sự của từng campaign. | Data | Liên tục |
 
-- AOV
-- Gross Margin
-- Discount Rate
-- Revenue per Order
-- Promotion ROI
+| KPI | Baseline | Target đề xuất |
+|---|---|---|
+| % đơn hàng có promotion | ~38% | **≤ 25%** sau 6 tháng |
+| Gross Margin | ~14% | **≥ 18%** sau 12 tháng |
+| AOV đơn có promotion vs không có | Đo từ dashboard | Thu hẹp chênh lệch |
+| Promotion ROI | Chưa đo | Mọi campaign có ROI dương so với holdout |
+
+---
 
 ### 4️⃣ Diversify Revenue Sources
 
-Giảm sự phụ thuộc vào một category và tối ưu channel mix.
+**Vì sao ưu tiên số 4:** Streetwear tạo ra **~80% lợi nhuận**, nên chỉ cần category này chững lại là toàn bộ lợi nhuận bị ảnh hưởng. Ở góc độ channel, Organic Search & Social Media mang volume lớn nhưng AOV thấp, còn **Email có AOV cao nhưng volume thấp**.
 
-**Key KPIs:**
+| # | Hành động | Chi tiết triển khai | Owner | Timeline |
+|---|---|---|---|---|
+| 4.1 | **Mở rộng Outdoor** | Tăng assortment và ngân sách quảng cáo cho Outdoor nếu growth rate theo quý dương; test trước với 10–20 SKU mới. | Merchandising | Tháng 2–6 |
+| 4.2 | **Tái cấu trúc Casual** | Rà soát SKU Casual có margin thấp nhất, cắt giảm SKU kém hiệu quả và điều chỉnh giá. | Merchandising | Tháng 3–4 |
+| 4.3 | **Cross-sell từ Streetwear** | Dùng lượng khách lớn của Streetwear để giới thiệu Outdoor/Casual qua gợi ý "complete the look" trên trang sản phẩm và email. | Marketing / E-commerce | Tháng 2–4 |
+| 4.4 | **Tăng quy mô kênh Email** | Thu thập email tại checkout và trên website (popup ưu đãi), chuyển một phần ngân sách paid sang CRM/Email và Referral. | Marketing | Tháng 1–6 |
+| 4.5 | **Theo dõi CAC & AOV theo channel** | Báo cáo tháng về CAC, AOV và repeat rate của từng kênh để phân bổ lại ngân sách theo hiệu quả. | Data / Marketing | Tháng 1 |
 
-- Revenue by Category
-- Profit by Category
-- Revenue by Channel
-- AOV by Channel
-- Customer Acquisition Cost
+| KPI | Baseline | Target đề xuất |
+|---|---|---|
+| % lợi nhuận từ Streetwear | ~80% | **≤ 70%** sau 12 tháng |
+| Revenue growth của Outdoor | Đo từ dashboard | Tăng trưởng dương theo quý |
+| % revenue từ Email | Đo từ dashboard | **Gấp đôi** sau 12 tháng |
+| CAC theo channel | Đo từ dashboard | Giảm CAC blended |
+
+---
 
 ### 5️⃣ Improve Logistics & Return Experience
 
-Giảm delivery time và return do sizing.
+**Vì sao ưu tiên số 5:** Delivery time trung bình **~6 ngày** và **Wrong Size** là lý do return nổi bật. Mỗi đơn return vì size làm tăng chi phí reverse logistics, chi phí xử lý tồn kho và giảm khả năng khách quay lại.
 
-**Key KPIs:**
+| # | Hành động | Chi tiết triển khai | Owner | Timeline |
+|---|---|---|---|---|
+| 5.1 | **Ưu tiên SKU có tỉ lệ Wrong Size cao** | Lấy danh sách **top 20 SKU** có return do Wrong Size cao nhất, đo lại size chart thực tế của các SKU này trước. | Data / Product | Tháng 1 |
+| 5.2 | **Size guide chi tiết** | Bảng số đo theo **cm**, chiều cao/cân nặng của model, nhãn fit **Slim / Regular / Oversized** trên mọi trang sản phẩm. | E-commerce / Product | Tháng 1–3 |
+| 5.3 | **Size recommendation** | Gợi ý size dựa trên lịch sử mua và return của khách (khi đủ dữ liệu). | Data | Tháng 6–12 |
+| 5.4 | **Carrier scorecard** | So sánh carrier hàng tháng theo **delivery time, on-time rate, return rate, cost per order**; chuyển volume sang carrier tốt nhất theo từng khu vực. | Ops / Logistics | Tháng 2–3 |
+| 5.5 | **Multi-carrier theo khu vực** | Ký với ít nhất 2 carrier cho mỗi khu vực lớn để có phương án dự phòng và tạo áp lực cạnh tranh về SLA. | Ops | Tháng 3–6 |
 
-- Average Delivery Time
-- On-time Delivery Rate
-- Return Rate
-- Return Reason
-- Cost per Shipment
+| KPI | Baseline | Target đề xuất |
+|---|---|---|
+| Average Delivery Time | ~6 ngày | **≤ 4 ngày** sau 6 tháng |
+| Return do Wrong Size | Đo từ dashboard | Giảm **20–30%** sau 6 tháng |
+| On-time Delivery Rate | Đo từ dashboard | **≥ 95%** |
+| Cost per Shipment | Đo từ dashboard | Không tăng khi giảm delivery time |
 
 ---
 
