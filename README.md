@@ -8,11 +8,11 @@ Phân tích hoạt động kinh doanh của một **fashion e-commerce platform*
 
 ## 📌 Project Overview
 
-Dashboard được xây dựng trên **Power BI**, gồm 5 trang phân tích chính:
+The dashboard is built in **Power BI** and consists of 5 main analysis pages:
 
 | Dashboard | Business Focus |
 |---|---|
-| **Overview** | Tổng quan tình hình kinh doanh |
+| **Overview** | Overall business performance |
 | **Customer** | Customer behavior & retention |
 | **Sales** | Sales performance & profitability |
 | **Inventory** | Inventory efficiency |
@@ -20,15 +20,15 @@ Dashboard được xây dựng trên **Power BI**, gồm 5 trang phân tích ch�
 
 ### Business Questions
 
-Dự án tập trung trả lời các câu hỏi:
+The project focuses on answering the following questions:
 
-- Doanh nghiệp đang tăng trưởng hay suy giảm?
-- Đâu là nguyên nhân chính khiến doanh thu và số đơn hàng giảm?
-- Khách hàng có quay lại mua hàng không?
-- Category và channel nào đang tạo ra giá trị cao nhất?
-- Doanh nghiệp có đang gặp vấn đề về tồn kho?
-- Những yếu tố nào đang ảnh hưởng đến return và delivery performance?
-- Doanh nghiệp nên ưu tiên cải thiện khu vực nào trước?
+- Is the business growing or declining?
+- What are the main drivers behind the decline in revenue and orders?
+- Do customers come back to make repeat purchases?
+- Which categories and channels generate the most value?
+- Is the business facing inventory issues?
+- What factors are affecting returns and delivery performance?
+- Which areas should the business prioritize improving first?
 
 ---
 
