@@ -24,6 +24,8 @@ Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại 
 │   ├── 04_select_k.py                   # Quét k, đánh giá thống kê + ổn định + business
 │   ├── 05_kmeans_segmentation.py        # K-Means với k đã chọn (tự điều chỉnh)
 │   └── 06_cluster_profiling.py          # Bức tranh tổng thể, profile, gợi ý hành động
+├── forecasting/                         # Dự báo doanh thu — xem README riêng (chưa có code)
+│   └── README.md                        # Flow: yêu cầu đề → dữ liệu → FE → validation → mô hình → submission
 ├── dashboard/
 │   ├── README.md                        # Phân tích dashboard (đang rà soát)
 │   └── Ecommerce_Dashboard.pbix         # Chỉ lưu local, không đưa lên Git
@@ -145,7 +147,7 @@ Flow chi tiết, định nghĩa biến và quyết định xử lý: [`customer_
 
 ## 4. Dự báo doanh thu ✍️
 
-> ⏳ Chưa triển khai.
+> ⏳ Chưa triển khai. Flow, yêu cầu đề, lưu ý leakage và kế hoạch validation: [`forecasting/README.md`](forecasting/README.md).
 
 - **Mục tiêu:** dự báo `Revenue` theo ngày.
 - **Dữ liệu huấn luyện:** `sales.csv`, từ 04/07/2012 đến 31/12/2022 (3.833 ngày, chuỗi liên tục, không thiếu ngày).
