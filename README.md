@@ -3,7 +3,7 @@
 Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại điện tử thời trang tại Việt Nam, giai đoạn 2012–2022. Dự án gồm bốn phần:
 
 - **EDA & chất lượng dữ liệu**
-- **Dashboard Power BI**
+- **Dashboard Power BI** (5 trang, đi từ tổng quan đến chi tiết)
 - **Phân nhóm khách hàng** (rule-based + K-Means)
 - **Dự báo doanh thu** theo ngày cho giai đoạn 01/01/2023–01/07/2024
 
@@ -28,11 +28,11 @@ Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại 
 ├── forecasting/                         # Dự báo doanh thu — xem README riêng (chưa có code)
 │   └── README.md                        # Flow: yêu cầu đề → dữ liệu → FE → validation → mô hình → submission
 ├── dashboard/
-│   ├── README.md                        # Phân tích dashboard (đang rà soát)
+│   ├── README.md                        # Cấu trúc 5 trang, mô hình dữ liệu, KPI & phân tích
 │   └── Ecommerce_Dashboard.pbix         # Chỉ lưu local, không đưa lên Git
 ├── reports/                             # Báo cáo PDF — mỗi phần một file
 │   ├── 01_EDA_report.pdf                # EDA & chất lượng dữ liệu
-│   ├── 02_Dashboard_report.pdf          # (chờ rà soát dashboard)
+│   ├── 02_Dashboard_report.pdf          # (chờ dựng lại dashboard)
 │   ├── 03_Customer_Segmentation_report.pdf
 │   ├── 04_Forecasting_report.pdf        # (chờ triển khai)
 │   ├── build_reports.py                 # Dựng PDF từ Markdown
@@ -137,7 +137,29 @@ Mỗi kiểm tra có mức ERROR/WARNING/INFO kèm đề xuất xử lý. Script
 
 ## 2. Dashboard
 
-> ⏳ **Đang rà soát:** dashboard chưa được kiểm tra lại và chưa áp dụng data cleaning từ bước EDA. Nội dung phân tích dashboard tạm để ở [`dashboard/README.md`](dashboard/README.md).
+> 🔄 **Đang dựng lại:** bản v1 dùng 5 bảng phẳng, chỉ có 2 quan hệ, chưa có bảng ngày dùng chung và chưa áp dụng data cleaning từ bước EDA. Bản mới dựng lại trên star schema theo cấu trúc 5 trang bên dưới.
+
+Dashboard đi từ tổng quan đến chi tiết, xoay quanh một cây KPI:
+
+- **Revenue** = Sessions × Conversion Rate × AOV
+- **Gross Profit** = Revenue × Gross Margin %
+
+Trang Overview trả lời doanh thu giảm là do yếu tố nào: traffic, CR hay AOV. Mỗi trang sau đi sâu vào đúng một yếu tố:
+
+| Trang | Câu hỏi | Nội dung chính |
+|---|---|---|
+| Executive Overview | Doanh nghiệp đang lên hay xuống, vì sao? | KPI so với năm trước, cây KPI, xu hướng 2012–2022 |
+| Customer | Khách có mua và có quay lại không? | Funnel sign-up → đơn đầu tiên, cohort retention, phân khúc RFM từ phần 3 |
+| Sales & Promotion | Tiền và lãi đến từ đâu, khuyến mãi có hiệu quả không? | Category và margin, AOV và margin khi có hoặc không có khuyến mãi |
+| Inventory | Tồn kho có cân với nhu cầu không? | DOS đã sửa công thức, stockout/overstock, tuổi tồn kho |
+| Logistics & Returns | Hàng có đến nơi, có bị trả lại không? | Thời gian giao theo vùng, lý do trả hàng, Wrong Size theo sản phẩm |
+
+**Mô hình dữ liệu (star schema):**
+
+- **Fact:** `fact_order_items` (dòng hàng), `fact_web_traffic` (ngày), `fact_inventory` (sản phẩm-tháng), `fact_shipments`, `fact_returns`.
+- **Dimension:** `dim_date` (dùng chung cho mọi fact), `dim_customer`, `dim_product`, `dim_geography`, `dim_promotion`.
+
+Định nghĩa từng KPI, công thức và trang chứa KPI: [`dashboard/README.md`](dashboard/README.md).
 
 - **Power BI:** `dashboard/Ecommerce_Dashboard.pbix` — file nặng (~110 MB) nên chỉ lưu local, không đưa lên GitHub.
 - **Phân tích & khuyến nghị:** [`reports/markdown/dashboard_analysis_recommendations.md`](reports/markdown/dashboard_analysis_recommendations.md)

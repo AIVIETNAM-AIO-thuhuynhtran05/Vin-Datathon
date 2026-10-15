@@ -1,20 +1,70 @@
 # Vin Datathon 2026 — E-commerce Dashboard & Analytics
 
-> **Business Analytics Project | Power BI | SQL | Customer | Sales | Inventory | Logistics**
+> **Business Analytics Project | Power BI | SQL | Customer | Sales & Promotion | Inventory | Logistics & Returns**
 
 An analysis of a **fashion e-commerce platform** over **2012–2022**, focused on identifying issues in **business performance, customer retention, sales, inventory, and logistics**, and turning them into recommendations that support data-driven decision-making.
 
-## 📌 Project Overview
+## 📌 Dashboard Structure
 
-The dashboard is built in **Power BI** and consists of 5 main analysis pages:
+> 🔄 **Being rebuilt.** Version 1 used 5 flat tables with only 2 relationships, no shared date table, and no data cleaning from the EDA step. The new version is rebuilt on a star schema with the 5-page structure below.
 
-| Dashboard | Business Focus |
-|---|---|
-| **Overview** | Overall business performance |
-| **Customer** | Customer behavior & retention |
-| **Sales** | Sales performance & profitability |
-| **Inventory** | Inventory efficiency |
-| **Logistics** | Delivery & operational performance |
+The dashboard goes from overview to detail and is built around one KPI tree:
+
+- **Revenue** = Sessions × Conversion Rate × AOV
+- **Gross Profit** = Revenue × Gross Margin %
+
+The Overview page shows which factor moved revenue (traffic, conversion, or AOV), and each later page digs into one of them.
+
+| Page | Business question | Main content |
+|---|---|---|
+| **Executive Overview** | Is the business growing or shrinking, and why? | KPIs vs. last year, the KPI tree, 2012–2022 trend |
+| **Customer** | Do customers buy, and do they come back? | Sign-up → first order funnel, cohort retention, RFM segments from the segmentation part |
+| **Sales & Promotion** | Where do revenue and profit come from, and do promotions pay off? | Category and margin, AOV and margin with vs. without a promotion |
+| **Inventory** | Is stock in balance with demand? | Days of Supply (corrected formula), stockout/overstock, inventory age |
+| **Logistics & Returns** | Do orders arrive, and do they stay? | Delivery time by region, return reasons, Wrong Size by product |
+
+## 🧱 Data Model
+
+A star schema, so every fact table can be filtered by the same date, customer, product, and region:
+
+- **Fact tables:** `fact_order_items` (order line), `fact_web_traffic` (day), `fact_inventory` (product-month), `fact_shipments`, `fact_returns`.
+- **Dimension tables:** `dim_date` (shared by every fact), `dim_customer`, `dim_product`, `dim_geography`, `dim_promotion`.
+
+## 📐 KPIs by Page
+
+| Page | KPI | Formula |
+|---|---|---|
+| Executive Overview | Revenue | Sessions × Conversion Rate × AOV |
+| Executive Overview | Gross Profit | Revenue × Gross Margin % |
+| Executive Overview | Orders | Count of unique orders |
+| Executive Overview | Customers | Count of unique buyers |
+| Executive Overview | Conversion Rate (CR) | Orders ÷ Sessions |
+| Executive Overview | YoY growth | (This year − Last year) ÷ Last year |
+| Customer | First-order rate | Sign-ups with an order ÷ Sign-ups |
+| Customer | Repeat rate | Customers with 2+ orders ÷ Customers |
+| Customer | Month +1 retention | Cohort buyers in month +1 ÷ Cohort size |
+| Customer | LTV (Customer Lifetime Value) | Revenue ÷ Customers |
+| Customer | Recency | Today − Last order date |
+| Customer | RFM segment | K-Means on Recency, Frequency, Monetary |
+| Sales & Promotion | AOV (Average Order Value) | Revenue ÷ Orders |
+| Sales & Promotion | Gross Margin % | Gross profit ÷ Revenue |
+| Sales & Promotion | Promo share | Promo orders ÷ Orders |
+| Sales & Promotion | Promo AOV gap | AOV with promo − AOV without promo |
+| Sales & Promotion | Discount rate | Discount amount ÷ Revenue before discount |
+| Sales & Promotion | Cart size | Units sold ÷ Orders |
+| Inventory | Days of Supply (DOS) | Stock on hand ÷ Avg daily units sold |
+| Inventory | Receive-to-Sales ratio | Units received ÷ Units sold |
+| Inventory | Stockout rate | Out-of-stock product-months ÷ All product-months |
+| Inventory | Overstock rate | Overstocked product-months ÷ All product-months |
+| Inventory | Sell-through | Units sold ÷ Units available |
+| Inventory | Aged stock | Stock older than 365 days ÷ Stock on hand |
+| Logistics & Returns | Delivery days | Avg (Delivery date − Order date) |
+| Logistics & Returns | Order-to-ship days | Avg (Ship date − Order date) |
+| Logistics & Returns | Cancel rate | Cancelled orders ÷ Orders |
+| Logistics & Returns | Return rate | Returned orders ÷ Delivered orders |
+| Logistics & Returns | Wrong Size share | Wrong Size returns ÷ All returns |
+
+> The findings below come from version 1 of the dashboard and the EDA. They will be re-checked once the rebuilt dashboard is done.
 
 ## 📊 Dataset Overview
 
@@ -47,7 +97,7 @@ The project focuses on answering the following questions:
 
 # 🔍 Key Business Insights
 
-## 1. Overview — Business Performance
+## 1. Executive Overview — Business Performance
 
 ### 🔎 Key Findings
 
@@ -66,11 +116,11 @@ In particular, acquisition relies heavily on **organic search and paid channels*
 
 ---
 
-# 2. Customer Analytics — Customer Behavior & Retention
+# 2. Customer — Customer Behavior & Retention
 
 ### 🔎 Key Findings
 
-- **62.64% of registered users have never made a purchase**, meaning a large share of users drop out of the funnel before becoming customers.
+- **28% of registered customers (34,091) never completed an order**, meaning a large share of users drop out of the funnel before becoming customers.
 - **Registrations keep rising while purchases decline**, widening the gap between registered users and paying customers. Low customer conversion is the main bottleneck in the funnel.
 - Nearly **48% of the customer base is Never Purchased or Lost**.
 - Retention drops sharply from **Month +1**, showing the business lacks strong mechanisms to drive repeat purchases.
@@ -102,7 +152,7 @@ Prioritize customer groups with:
 
 ---
 
-# 3. Sales Performance — Revenue & Profitability
+# 3. Sales & Promotion — Revenue, Profitability & Promotions
 
 ### 🔎 Key Findings
 
@@ -189,7 +239,7 @@ can be used to clear inventory faster.
 
 ---
 
-# 5. Logistics — Operational Efficiency
+# 5. Logistics & Returns — Delivery & Returns
 
 ### 🔎 Key Findings
 
@@ -250,7 +300,7 @@ Priorities are ranked by **impact on revenue/profit** and **speed of implementat
 
 | Priority | Core Problem | Key Actions | North-star KPI | Proposed Target |
 |---|---|---|---|---|
-| 1️⃣ Conversion & Retention | Registrations up but purchases down · 62.64% of users never purchased · ~48% Never Purchased/Lost | Funnel fix + welcome flow + RFM-based win-back | % Never Purchased/Lost customers | **48% → 40%** in 12 months |
+| 1️⃣ Conversion & Retention | Registrations up but purchases down · 28% of registered customers never completed an order · ~48% Never Purchased/Lost | Funnel fix + welcome flow + RFM-based win-back | % Never Purchased/Lost customers | **48% → 40%** in 12 months |
 | 2️⃣ Inventory Efficiency | DOS ~826 days · Inventory/Sales 1.15–1.18 | Stop replenishing aged SKUs + liquidate by inventory age | Days of Supply | **826 → < 365 days** in 12 months |
 | 3️⃣ Promotion & Margin | Promotions on ~38% of orders · Margin 22% → 14% | Targeted promotions + discount floor | Gross Margin | **14% → 18%** in 12 months |
 | 4️⃣ Revenue Diversification | Streetwear ~80% of profit | Expand Outdoor + grow the Email channel | % of profit from Streetwear | **80% → ≤ 70%** in 12 months |
@@ -260,7 +310,7 @@ Priorities are ranked by **impact on revenue/profit** and **speed of implementat
 
 ### 1️⃣ Improve Customer Conversion & Retention
 
-**Why priority #1:** **Registrations are rising while purchases are falling**, meaning the business still attracts new users but fails to turn them into buyers. Traffic is growing, yet conversion is only **~0.13%**, **62.64%** of registered users have never purchased, and retention drops sharply from **Month +1**. The business is losing customers at both ends of the funnel: it cannot convert new users or keep existing buyers.
+**Why priority #1:** **Registrations are rising while purchases are falling**, meaning the business still attracts new users but fails to turn them into buyers. Traffic is growing, yet conversion is only **~0.13%**, **28%** of registered customers never completed an order, and retention drops sharply from **Month +1**. The business is losing customers at both ends of the funnel: it cannot convert new users or keep existing buyers.
 
 | # | Action | Implementation Details | Owner | Timeline |
 |---|---|---|---|---|
@@ -274,7 +324,7 @@ Priorities are ranked by **impact on revenue/profit** and **speed of implementat
 
 | KPI | Baseline | Proposed Target |
 |---|---|---|
-| Registered users who never purchased | 62.64% | **≤ 55%** after 6 months |
+| Registered customers who never completed an order | 28% | Downward trend across monthly sign-up cohorts |
 | First purchase within 30 days of sign-up | Measure from dashboard | Steady increase across monthly cohorts |
 | Purchase growth vs. registration growth | Registrations up, purchases down | Purchases grow in line with registrations |
 | Never Purchased + Lost | ~48% | **≤ 40%** after 12 months |
