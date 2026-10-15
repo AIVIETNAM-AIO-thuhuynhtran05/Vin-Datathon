@@ -18,7 +18,8 @@ Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại 
 │   ├── config.py                        # Đường dẫn & tham số dùng chung
 │   ├── plot_style.py                    # Màu/style biểu đồ
 │   ├── 01_build_customer_dataset.py     # Aggregation, quality check, rule-based segmentation
-│   ├── 02_transform_features.py         # log1p + StandardScaler
+│   ├── behavior_features.py             # Biến hành vi dùng chung (FE + profiling)
+│   ├── 02_transform_features.py         # Feature engineering: biến đổi, scale, đánh giá biến ứng viên
 │   ├── 03_pca_analysis.py               # PCA + giải thích
 │   ├── segment_naming.py                # Luật đặt tên cụm gợi ý + hành động
 │   ├── 04_select_k.py                   # Quét k, đánh giá thống kê + ổn định + business
@@ -29,13 +30,19 @@ Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại 
 ├── dashboard/
 │   ├── README.md                        # Phân tích dashboard (đang rà soát)
 │   └── Ecommerce_Dashboard.pbix         # Chỉ lưu local, không đưa lên Git
-├── reports/
-│   ├── 00_data_overview.md              # Mô tả tổng quan & ý nghĩa từng bảng
-│   ├── data_quality_and_eda.md          # (tự sinh) Chất lượng dữ liệu & EDA
-│   ├── customer_segmentation_pca.md     # (tự sinh) PCA
-│   ├── customer_segmentation_k_selection.md  # (tự sinh) Chọn số cụm k
-│   ├── customer_segment_profiles.md     # (tự sinh) Profile các nhóm khách hàng
-│   └── dashboard_analysis_recommendations.md
+├── reports/                             # Báo cáo PDF — mỗi phần một file
+│   ├── 01_EDA_report.pdf                # EDA & chất lượng dữ liệu
+│   ├── 02_Dashboard_report.pdf          # (chờ rà soát dashboard)
+│   ├── 03_Customer_Segmentation_report.pdf
+│   ├── 04_Forecasting_report.pdf        # (chờ triển khai)
+│   ├── build_reports.py                 # Dựng PDF từ Markdown
+│   └── markdown/                        # Nguồn Markdown của các báo cáo
+│       ├── 00_data_overview.md          # Mô tả tổng quan & ý nghĩa từng bảng
+│       ├── data_quality_and_eda.md      # (tự sinh) Chất lượng dữ liệu & EDA
+│       ├── customer_segmentation_pca.md # (tự sinh) PCA
+│       ├── customer_segmentation_k_selection.md  # (tự sinh) Chọn số cụm k
+│       ├── customer_segment_profiles.md # (tự sinh) Profile các nhóm khách hàng
+│       └── dashboard_analysis_recommendations.md
 ├── data/
 │   ├── raw/                             # CSV gốc (chỉ đọc)
 │   └── processed/                       # Tự sinh, không đưa vào Git
@@ -49,7 +56,7 @@ Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại 
 **Nguyên tắc chung:**
 
 - Code chỉ đọc `data/raw/`, ghi kết quả vào `data/processed/` (không commit).
-- Báo cáo Markdown đặt trong `reports/`.
+- Báo cáo là **PDF trong `reports/`, mỗi phần một file**. Nguồn Markdown nằm trong `reports/markdown/` (hoặc README của từng folder) và được dựng thành PDF bằng `python reports/build_reports.py`.
 - Mỗi folder code là một mảng công việc. Các file đánh số theo thứ tự chạy.
 
 ## Tổng quan dữ liệu
@@ -63,7 +70,7 @@ Dữ liệu vận hành trải từ **04/07/2012 đến 31/12/2022**, gồm 13 t
 
 Tài liệu đề thi mô tả 15 tệp; `sample_submission.csv` và `inventory_enhanced.csv` chưa có trong `data/raw/`.
 
-Mô tả số dòng, số cột, ý nghĩa, khóa và cột của từng bảng: [`reports/00_data_overview.md`](reports/00_data_overview.md).
+Mô tả số dòng, số cột, ý nghĩa, khóa và cột của từng bảng: [`reports/markdown/00_data_overview.md`](reports/markdown/00_data_overview.md).
 
 Các bảng liên kết qua `customer_id`, `product_id`, `order_id`, `promo_id` và `zip`. Grain khác nhau giữa các bảng:
 
@@ -94,6 +101,9 @@ python customer_segmentation/03_pca_analysis.py
 python customer_segmentation/04_select_k.py                    # chọn k
 python customer_segmentation/05_kmeans_segmentation.py --k <k> # tự điều chỉnh
 python customer_segmentation/06_cluster_profiling.py
+
+# 3. Dựng báo cáo PDF (cần Microsoft Edge hoặc Google Chrome)
+python reports/build_reports.py                  # thêm --include-drafts để dựng cả bản nháp
 ```
 
 ## 1. EDA & chất lượng dữ liệu
@@ -117,7 +127,7 @@ Mỗi kiểm tra có mức ERROR/WARNING/INFO kèm đề xuất xử lý. Script
   - `data_quality_checks.csv`, `missing_values.csv`, `outliers.csv`, `table_overview.csv`
   - `violations/<bảng>__<kiểm tra>.csv`: các dòng vi phạm
   - `plots/`: biểu đồ
-- **Báo cáo:** [`reports/data_quality_and_eda.md`](reports/data_quality_and_eda.md).
+- **Báo cáo:** [`reports/01_EDA_report.pdf`](reports/01_EDA_report.pdf) (nguồn: [`reports/markdown/data_quality_and_eda.md`](reports/markdown/data_quality_and_eda.md)).
 
 **Phát hiện chính ảnh hưởng đến phân tích:**
 
@@ -130,7 +140,7 @@ Mỗi kiểm tra có mức ERROR/WARNING/INFO kèm đề xuất xử lý. Script
 > ⏳ **Đang rà soát:** dashboard chưa được kiểm tra lại và chưa áp dụng data cleaning từ bước EDA. Nội dung phân tích dashboard tạm để ở [`dashboard/README.md`](dashboard/README.md).
 
 - **Power BI:** `dashboard/Ecommerce_Dashboard.pbix` — file nặng (~110 MB) nên chỉ lưu local, không đưa lên GitHub.
-- **Phân tích & khuyến nghị:** [`reports/dashboard_analysis_recommendations.md`](reports/dashboard_analysis_recommendations.md)
+- **Phân tích & khuyến nghị:** [`reports/markdown/dashboard_analysis_recommendations.md`](reports/markdown/dashboard_analysis_recommendations.md)
 
 ## 3. Phân nhóm khách hàng
 

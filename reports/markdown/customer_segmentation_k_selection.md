@@ -25,7 +25,7 @@ Các chỉ số thống kê thường ưu tiên k nhỏ: ít cụm thì cụm t�
 | 7 | 36,410 | 0.346 | 85,550 | 0.873 | 0.986 | 3.2% | 6/7 | 6.3 | — |
 | 8 | 31,427 | 0.364 | 86,943 | 0.800 | 0.961 | 3.0% | 6/8 | 4.3 | — |
 
-![Chỉ số theo k](../data/processed/customer_segmentation/plots/k_selection_metrics.png)
+![Chỉ số theo k](../../data/processed/customer_segmentation/plots/k_selection_metrics.png)
 
 - Elbow của inertia: **k = 4**. Silhouette cao nhất: **k = 2**.
 - **Gợi ý: k = 3**: silhouette 0.401, ARI 0.988, cụm nhỏ nhất 24.9%, 3 nhóm hành động khác nhau.
@@ -33,7 +33,7 @@ Các chỉ số thống kê thường ưu tiên k nhỏ: ít cụm thì cụm t�
 
 ## 3. Mỗi k chia khách hàng thành những nhóm nào
 
-![Thành phần nhóm theo k](../data/processed/customer_segmentation/plots/k_selection_composition.png)
+![Thành phần nhóm theo k](../../data/processed/customer_segmentation/plots/k_selection_composition.png)
 
 ### k = 3 (gợi ý)
 

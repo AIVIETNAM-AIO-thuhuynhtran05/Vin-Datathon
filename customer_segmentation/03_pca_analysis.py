@@ -9,7 +9,7 @@ Vì sao PCA:
   * Loadings cho biết mỗi trục là tổ hợp của biến nào → trục có ý nghĩa kinh doanh.
 
 Kiểm tra trước PCA: ma trận tương quan, Bartlett (tương quan có khác 0 không) và KMO
-(mức độ chung phương sai). Kết quả và diễn giải ghi vào reports/customer_segmentation_pca.md.
+(mức độ chung phương sai). Kết quả và diễn giải ghi vào reports/markdown/customer_segmentation_pca.md.
 
 Đầu vào : data/processed/customer_segmentation/customer_features_transformed.csv
 Đầu ra  : customer_pca_scores.csv (customer_id + PC đã chọn — dùng cho K-Means),
@@ -28,7 +28,7 @@ import pandas as pd
 from scipy import stats
 from sklearn.decomposition import PCA
 
-from config import FEATURES_PATH, OUTPUT_DIR, PCA_REPORT_PATH, PCA_SCORES_PATH, PLOT_DIR, ROOT, require_file
+from config import FEATURES_PATH, OUTPUT_DIR, PCA_REPORT_PATH, PCA_SCORES_PATH, PLOT_DIR, PLOT_LINK, ROOT, require_file
 from plot_style import DIVERGING, INK, INK_SECONDARY, MUTED, SEQUENTIAL, SURFACE, annotate_heatmap, apply_style
 
 
@@ -78,7 +78,7 @@ def plot_correlation(correlation: pd.DataFrame) -> None:
     axis.grid(False)
     annotate_heatmap(axis, correlation.to_numpy(), [[f"{v:.2f}" for v in row] for row in correlation.to_numpy()],
                      threshold=0.6)
-    axis.set_title("Tương quan giữa các biến RFM (sau log1p + scale)", loc="left")
+    axis.set_title("Tương quan RFM (log1p + scale)", loc="left")
     figure.colorbar(image, ax=axis, shrink=0.8)
     figure.tight_layout()
     figure.savefig(PLOT_DIR / "pca_feature_correlation.png", dpi=110)
@@ -162,8 +162,7 @@ def write_report(meta: dict[str, object], variance: pd.DataFrame, loadings: pd.D
     lines = [
         "# PCA cho phân cụm khách hàng",
         "",
-        "Tạo tự động bởi `customer_segmentation/03_pca_analysis.py`. Biểu đồ: "
-        "`data/processed/customer_segmentation/plots/pca_*.png`.",
+        "Tạo tự động bởi `customer_segmentation/03_pca_analysis.py`.",
         "",
         "## 1. Vì sao dùng PCA trước K-Means",
         "",
@@ -204,9 +203,11 @@ def write_report(meta: dict[str, object], variance: pd.DataFrame, loadings: pd.D
 
     lines += [
         "",
+        f"![Tương quan giữa các biến RFM]({PLOT_LINK}/pca_feature_correlation.png)",
+        "",
         "## 3. Chọn số thành phần",
         "",
-        "| PC | Eigenvalue | % phương sai | % tích lũy | Thành phần chính (|loading| ≥ 0,5) |",
+        "| PC | Eigenvalue | % phương sai | % tích lũy | Biến chính (trị tuyệt đối loading ≥ 0,5) |",
         "|---|---:|---:|---:|---|",
     ]
     for _, row in variance.iterrows():
@@ -222,6 +223,8 @@ def write_report(meta: dict[str, object], variance: pd.DataFrame, loadings: pd.D
         f"- **Đã chọn: {n} PC** ({meta['selection_rule']}), giữ **{meta['cumulative_variance_selected_pct']:.1f}%** "
         "phương sai. Đổi bằng `--variance-target` hoặc `--n-components`.",
         "",
+        f"![Scree plot]({PLOT_LINK}/pca_scree.png)",
+        "",
         "## 4. Diễn giải các thành phần",
         "",
         "Loading = tương quan giữa biến gốc và PC (dấu chỉ chiều; Recency cao = lâu rồi chưa mua = **xấu**).",
@@ -234,6 +237,10 @@ def write_report(meta: dict[str, object], variance: pd.DataFrame, loadings: pd.D
         "Gợi ý đọc trục: thành phần mà Frequency và Monetary cùng dấu, Recency ngược dấu là trục **\"giá trị & gắn bó\"** "
         "(cao = mua nhiều, chi nhiều, mới mua gần đây). Thành phần mà Recency nổi trội là trục **\"độ mới\"**, tách khách "
         "vừa mua gần đây với khách đã lâu không quay lại ở cùng mức giá trị.",
+        "",
+        f"![Loadings]({PLOT_LINK}/pca_loadings.png)",
+        "",
+        f"![Biplot PC1–PC2]({PLOT_LINK}/pca_biplot.png)",
         "",
         "## 5. Dùng kết quả cho K-Means",
         "",

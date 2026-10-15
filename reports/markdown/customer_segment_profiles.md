@@ -15,7 +15,7 @@ Khách **chưa có đơn phát sinh doanh thu** được gán nhóm theo luật 
 | kmeans | C2 | Trung thành | 21,331 | 17.5% | 39.5% | 9 | 216,897 |
 | kmeans | C3 | Ngủ đông | 27,757 | 22.8% | 14.9% | 3 | 66,978 |
 
-![Toàn bộ khách hàng](../data/processed/customer_segmentation/plots/profile_size_vs_revenue.png)
+![Toàn bộ khách hàng](../../data/processed/customer_segmentation/plots/profile_size_vs_revenue.png)
 
 Luật gán nhóm: có ≥ 1 đơn `paid`/`shipped`/`delivered`/`returned` → K-Means; có đơn nhưng tất cả đều `cancelled`/`created` → **RB2**; chưa đặt đơn nào → **RB1**.
 
@@ -46,9 +46,9 @@ Luật gán nhóm: có ≥ 1 đơn `paid`/`shipped`/`delivered`/`returned` → K
 
 Giá trị là **median** (tỷ lệ trả và dùng khuyến mãi là trung bình).
 
-![Cụm trên PCA](../data/processed/customer_segmentation/plots/profile_pca_clusters.png)
-![RFM theo cụm](../data/processed/customer_segmentation/plots/profile_rfm_boxplots.png)
-![Rank index](../data/processed/customer_segmentation/plots/profile_rank_index.png)
+![Cụm trên PCA](../../data/processed/customer_segmentation/plots/profile_pca_clusters.png)
+![RFM theo cụm](../../data/processed/customer_segmentation/plots/profile_rfm_boxplots.png)
+![Rank index](../../data/processed/customer_segmentation/plots/profile_rank_index.png)
 
 ## 2. Biến mô tả nào thực sự khác biệt giữa các cụm?
 
@@ -107,11 +107,11 @@ Với hàng chục nghìn khách, p-value của Chi-square gần như luôn rấ
 
 Ô hiển thị % khách trong cụm; màu đỏ = lift > 1 (nhiều hơn mặt bằng), xanh = lift < 1.
 
-![Danh mục ưa thích](../data/processed/customer_segmentation/plots/profile_preferred_category.png)
-![Thanh toán](../data/processed/customer_segmentation/plots/profile_preferred_payment.png)
-![Thiết bị](../data/processed/customer_segmentation/plots/profile_preferred_device.png)
-![Nguồn đơn](../data/processed/customer_segmentation/plots/profile_preferred_source.png)
-![Vùng](../data/processed/customer_segmentation/plots/profile_region.png)
-![Kênh thu hút](../data/processed/customer_segmentation/plots/profile_acquisition_channel.png)
-![Nhóm tuổi](../data/processed/customer_segmentation/plots/profile_age_group.png)
-![Giới tính](../data/processed/customer_segmentation/plots/profile_gender.png)
+![Danh mục ưa thích](../../data/processed/customer_segmentation/plots/profile_preferred_category.png)
+![Thanh toán](../../data/processed/customer_segmentation/plots/profile_preferred_payment.png)
+![Thiết bị](../../data/processed/customer_segmentation/plots/profile_preferred_device.png)
+![Nguồn đơn](../../data/processed/customer_segmentation/plots/profile_preferred_source.png)
+![Vùng](../../data/processed/customer_segmentation/plots/profile_region.png)
+![Kênh thu hút](../../data/processed/customer_segmentation/plots/profile_acquisition_channel.png)
+![Nhóm tuổi](../../data/processed/customer_segmentation/plots/profile_age_group.png)
+![Giới tính](../../data/processed/customer_segmentation/plots/profile_gender.png)

@@ -1,6 +1,6 @@
 # PCA cho phân cụm khách hàng
 
-Tạo tự động bởi `customer_segmentation/03_pca_analysis.py`. Biểu đồ: `data/processed/customer_segmentation/plots/pca_*.png`.
+Tạo tự động bởi `customer_segmentation/03_pca_analysis.py`.
 
 ## 1. Vì sao dùng PCA trước K-Means
 
@@ -26,9 +26,11 @@ Tạo tự động bởi `customer_segmentation/03_pca_analysis.py`. Biểu đ�
 | **Frequency** | -0.60 | 1.00 | 0.83 |
 | **Monetary** | -0.52 | 0.83 | 1.00 |
 
+![Tương quan giữa các biến RFM](../../data/processed/customer_segmentation/plots/pca_feature_correlation.png)
+
 ## 3. Chọn số thành phần
 
-| PC | Eigenvalue | % phương sai | % tích lũy | Thành phần chính (|loading| ≥ 0,5) |
+| PC | Eigenvalue | % phương sai | % tích lũy | Biến chính (trị tuyệt đối loading ≥ 0,5) |
 |---|---:|---:|---:|---|
 | PC1 | 2.314 | 77.1% | 77.1% | +Frequency (+0.93), +Monetary (+0.91), −Recency (-0.79) |
 | PC2 | 0.523 | 17.4% | 94.6% | +Recency (+0.61) |
@@ -39,6 +41,8 @@ Tạo tự động bởi `customer_segmentation/03_pca_analysis.py`. Biểu đ�
 - **Scree plot** (`pca_scree.png`): chọn tại "khuỷu", nơi phần phương sai tăng thêm giảm đột ngột.
 - **Đã chọn: 2 PC** (phương sai tích lũy ≥ 80%, tối thiểu 2 PC), giữ **94.6%** phương sai. Đổi bằng `--variance-target` hoặc `--n-components`.
 
+![Scree plot](../../data/processed/customer_segmentation/plots/pca_scree.png)
+
 ## 4. Diễn giải các thành phần
 
 Loading = tương quan giữa biến gốc và PC (dấu chỉ chiều; Recency cao = lâu rồi chưa mua = **xấu**).
@@ -48,6 +52,10 @@ Loading = tương quan giữa biến gốc và PC (dấu chỉ chiều; Recency 
 - **PC3**: −Frequency (-0.30).
 
 Gợi ý đọc trục: thành phần mà Frequency và Monetary cùng dấu, Recency ngược dấu là trục **"giá trị & gắn bó"** (cao = mua nhiều, chi nhiều, mới mua gần đây). Thành phần mà Recency nổi trội là trục **"độ mới"**, tách khách vừa mua gần đây với khách đã lâu không quay lại ở cùng mức giá trị.
+
+![Loadings](../../data/processed/customer_segmentation/plots/pca_loadings.png)
+
+![Biplot PC1–PC2](../../data/processed/customer_segmentation/plots/pca_biplot.png)
 
 ## 5. Dùng kết quả cho K-Means
 

@@ -16,7 +16,7 @@ Script chỉ phát hiện và ghi nhận, không sửa dữ liệu gốc. Mỗi 
   data/processed/eda/table_overview.csv        — số dòng/cột/missing/trùng theo bảng
   data/processed/eda/violations/*.csv          — các dòng vi phạm của từng kiểm tra
   data/processed/eda/plots/*.png               — histogram + boxplot biến số
-  reports/data_quality_and_eda.md              — báo cáo tổng hợp theo bảng
+  reports/markdown/data_quality_and_eda.md     — báo cáo tổng hợp theo bảng (nguồn của PDF)
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ RAW_DIR = ROOT / "data" / "raw"
 OUTPUT_DIR = ROOT / "data" / "processed" / "eda"
 VIOLATION_DIR = OUTPUT_DIR / "violations"
 PLOT_DIR = OUTPUT_DIR / "plots"
-REPORT_PATH = ROOT / "reports" / "data_quality_and_eda.md"
+REPORT_PATH = ROOT / "reports" / "markdown" / "data_quality_and_eda.md"
 
 DATA_START = pd.Timestamp("2012-01-01")
 DATA_END = pd.Timestamp("2022-12-31")

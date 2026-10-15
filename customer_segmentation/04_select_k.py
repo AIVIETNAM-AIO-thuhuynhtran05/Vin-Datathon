@@ -11,7 +11,7 @@ Mỗi k được đánh giá bằng:
 Kèm thành phần của từng k: tên cụm gợi ý, % khách, % doanh thu, median R/F/M.
 
 Đầu ra : k_selection/k_selection_metrics.csv, k_selection/k_selection_profiles.csv,
-         plots/k_selection_*.png, reports/customer_segmentation_k_selection.md
+         plots/k_selection_*.png, reports/markdown/customer_segmentation_k_selection.md
 Sau khi chọn k: python customer_segmentation/05_kmeans_segmentation.py --k <k>
 """
 
@@ -33,6 +33,7 @@ from config import (
     K_SELECTION_REPORT_PATH,
     PCA_SCORES_PATH,
     PLOT_DIR,
+    PLOT_LINK,
     RANDOM_STATE,
     require_file,
 )
@@ -181,7 +182,7 @@ def plot_composition(profiles: pd.DataFrame, chosen: int) -> None:
 
 def write_report(scored: pd.DataFrame, profiles: pd.DataFrame, chosen: int, elbow: int,
                  args: argparse.Namespace, customer_count: int) -> None:
-    plots = "../data/processed/customer_segmentation/plots"
+    plots = PLOT_LINK
     best_silhouette = int(scored.loc[scored["silhouette"].idxmax(), "k"])
     lines = [
         "# Chọn số cụm k cho K-Means",

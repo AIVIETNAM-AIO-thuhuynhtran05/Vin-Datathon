@@ -16,13 +16,13 @@ data/raw ─► 1. Aggregation ─► 2. QC ┤                                 
 | Bước | Script | Việc làm | Trạng thái |
 |---|---|---|---|
 | 1–2 | `01_build_customer_dataset.py` | Aggregation, quality check, tính RFM, gán nhóm rule-based | ✅ |
-| 3a | `02_transform_features.py` | log1p + StandardScaler | ✅ |
-| 3b | `03_pca_analysis.py` | PCA + giải thích → [`reports/customer_segmentation_pca.md`](../reports/customer_segmentation_pca.md) | ✅ |
-| 4 | `04_select_k.py` | Quét k = 2–8, đánh giá thống kê + ổn định + business → [`reports/customer_segmentation_k_selection.md`](../reports/customer_segmentation_k_selection.md) | ✅ |
+| 3a | `02_transform_features.py` | Feature engineering: so sánh phép biến đổi, scale, đánh giá biến ứng viên → [`reports/markdown/customer_segmentation_features.md`](../reports/markdown/customer_segmentation_features.md) | ✅ |
+| 3b | `03_pca_analysis.py` | PCA + giải thích → [`reports/markdown/customer_segmentation_pca.md`](../reports/markdown/customer_segmentation_pca.md) | ✅ |
+| 4 | `04_select_k.py` | Quét k = 2–8, đánh giá thống kê + ổn định + business → [`reports/markdown/customer_segmentation_k_selection.md`](../reports/markdown/customer_segmentation_k_selection.md) | ✅ |
 | 5 | `05_kmeans_segmentation.py` | K-Means với k đã chọn → `customer_segments.csv` (`customer_id`, `cluster`) | ✍️ tự điều chỉnh |
-| 6–8 | `06_cluster_profiling.py` | Bức tranh tổng thể, profile, gợi ý hành động → [`reports/customer_segment_profiles.md`](../reports/customer_segment_profiles.md) | ✅ (chạy lại sau khi chốt K-Means) |
+| 6–8 | `06_cluster_profiling.py` | Bức tranh tổng thể, profile, gợi ý hành động → [`reports/markdown/customer_segment_profiles.md`](../reports/markdown/customer_segment_profiles.md) | ✅ (chạy lại sau khi chốt K-Means) |
 
-`config.py` chứa toàn bộ đường dẫn, định nghĩa trạng thái đơn và luật rule-based. `segment_naming.py` chứa luật đặt tên cụm gợi ý và hành động theo nhóm. `plot_style.py` chứa màu và style biểu đồ.
+`config.py` chứa toàn bộ đường dẫn, định nghĩa trạng thái đơn, luật rule-based và phép biến đổi biến. `behavior_features.py` tạo các biến hành vi dùng chung cho bước 02 và 06. `segment_naming.py` chứa luật đặt tên cụm gợi ý và hành động theo nhóm. `plot_style.py` chứa màu và style biểu đồ.
 
 ---
 
@@ -90,7 +90,7 @@ Kết quả cuối: `customer_segments_all.csv`, gồm `customer_id`, `segment_m
 - `order_date` và `payment_value` chuyển kiểu hợp lệ.
 - Mọi `orders.customer_id` có trong `customers`; `payments` khớp 1–1 với `orders`; mọi `returns.order_id` có trong `orders`.
 
-**Vấn đề dữ liệu ảnh hưởng đến phân cụm** (từ [báo cáo EDA](../reports/data_quality_and_eda.md)) và cách xử lý:
+**Vấn đề dữ liệu ảnh hưởng đến phân cụm** (từ [báo cáo EDA](../reports/markdown/data_quality_and_eda.md)) và cách xử lý:
 
 | Vấn đề | Quy mô | Xử lý |
 |---|---|---|
@@ -111,30 +111,47 @@ Kết quả cuối: `customer_segments_all.csv`, gồm `customer_id`, `segment_m
 
 Nhân khẩu học (tuổi, giới tính, vùng, kênh) **không** đưa vào K-Means. Lý do: cụm cần phản ánh **hành vi** (thứ có thể tác động bằng marketing); nhân khẩu học chỉ dùng để mô tả cụm sau khi đã phân xong.
 
-### 3.2 Biến đổi
+### 3.2 Biến đổi — `02_transform_features.py`
 
-1. **`log1p`**: giảm độ lệch phải của F và M, để vài khách chi tiêu cực lớn không kéo tâm cụm.
-2. **`StandardScaler`**: đưa 3 biến về cùng thang. K-Means dùng khoảng cách Euclid, nên nếu không scale thì Monetary (đơn vị tiền) sẽ lấn át hai biến còn lại.
-3. **PCA** — chi tiết trong [`reports/customer_segmentation_pca.md`](../reports/customer_segmentation_pca.md):
+Chi tiết và số liệu: [`reports/markdown/customer_segmentation_features.md`](../reports/markdown/customer_segmentation_features.md).
+
+1. **Biến đổi phân phối** (`config.FEATURE_TRANSFORMS`): giảm độ lệch để vài khách cực lớn không kéo tâm cụm. Mỗi biến được thử 4 phép (không biến đổi, `sqrt`, `log1p`, Yeo-Johnson) và so sánh skew:
+
+   | Biến | Skew gốc | `log1p` (đang dùng) | Gợi ý |
+   |---|---:|---:|---|
+   | Recency | +0,62 | −1,22 (lệch hơn gốc) | `sqrt` (+0,01) |
+   | Frequency | +2,61 | +0,53 | Yeo-Johnson (+0,13) |
+   | Monetary | +2,55 | −1,07 | Yeo-Johnson (−0,02) |
+
+   ✍️ **Cần quyết định:** giữ `log1p` cho cả 3 biến, hay đổi theo gợi ý. Đổi thì phải chạy lại từ bước 02.
+2. **`StandardScaler`**: đưa 3 biến về cùng thang (mean 0, std 1). K-Means dùng khoảng cách Euclid, nên nếu không scale thì Monetary sẽ lấn át hai biến còn lại.
+3. **PCA** — chi tiết trong [`reports/markdown/customer_segmentation_pca.md`](../reports/markdown/customer_segmentation_pca.md):
    - **Vì sao:** Frequency và Monetary tương quan **r = 0,83**, tức K-Means sẽ tính khía cạnh "giá trị mua" gần như hai lần. PCA xoay sang các trục không tương quan, đồng thời cho phép vẽ cụm trên mặt phẳng 2D.
    - **Có phù hợp không:** Bartlett p ≈ 0 (các biến có tương quan) và KMO = 0,65 (chấp nhận được).
    - **Kết quả:** PC1 giải thích 77,1% phương sai (trục "giá trị & gắn bó": +F, +M, −R); PC2 giải thích 17,4% (trục "độ mới", Recency nổi trội). **Giữ 2 PC = 94,6% phương sai.**
    - **Lưu ý:** nếu giữ đủ 3 PC thì K-Means cho kết quả y hệt dữ liệu đã scale. Lợi ích chỉ đến từ việc bỏ PC3.
 
-### 3.3 Biến hành vi bổ sung cho profile *(dự kiến — không đưa vào K-Means trừ khi quyết định khác)*
+### 3.3 Biến hành vi ứng viên
 
-- Giá trị đơn trung bình (AOV = M / F).
-- Tỷ lệ đơn bị trả, tỷ lệ đơn hủy.
-- Tỷ lệ dòng hàng có khuyến mãi.
-- Số ngày từ đơn đầu tiên (tenure, thay cho `signup_date`).
-- Danh mục / thiết bị / phương thức thanh toán / nguồn đơn ưa thích.
-- Điểm đánh giá trung bình.
+Các biến hành vi được tạo trong `behavior_features.py` (dùng chung với bước profiling) và đánh giá bằng tương quan Spearman với RFM. Nếu |ρ| ≥ 0,7 thì biến đó trùng thông tin với RFM.
+
+| Biến | Định nghĩa | Tương quan mạnh nhất với RFM |
+|---|---|---|
+| `aov` | Monetary / Frequency | Monetary (ρ = 0,56) |
+| `tenure_days` | Số ngày từ đơn doanh thu đầu tiên | Frequency (0,66) |
+| `return_rate` | Tỷ lệ đơn bị trả | Frequency (0,40) |
+| `cancel_rate` | Tỷ lệ đơn hủy | Frequency (0,39) |
+| `items_per_order` | Số sản phẩm / đơn | Monetary (0,20) |
+| `promo_share` | Tỷ lệ dòng có khuyến mãi | Frequency (0,12) |
+| `avg_rating` | Điểm đánh giá TB (55% khách có) | Frequency (−0,07) |
+
+Không biến nào trùng thông tin với RFM. Hiện tất cả chỉ dùng để **mô tả cụm**. Biến phân loại (danh mục, thiết bị, thanh toán, nguồn đơn) và nhân khẩu học không đưa vào K-Means vì không đo được bằng khoảng cách Euclid.
 
 ✍️ Ghi lại ở đây nếu quyết định thêm biến nào vào K-Means.
 
 ## 4. Chọn số cụm k — `04_select_k.py`
 
-Bước này **chỉ đánh giá, không ghi nhãn**. Quét k = 2–8 trên `customer_pca_scores.csv`, mỗi k chạy 5 `random_state`. Chi tiết: [`reports/customer_segmentation_k_selection.md`](../reports/customer_segmentation_k_selection.md).
+Bước này **chỉ đánh giá, không ghi nhãn**. Quét k = 2–8 trên `customer_pca_scores.csv`, mỗi k chạy 5 `random_state`. Chi tiết: [`reports/markdown/customer_segmentation_k_selection.md`](../reports/markdown/customer_segmentation_k_selection.md).
 
 **Tiêu chí:** k chọn theo 3 lớp, vì silhouette một mình luôn ưu tiên k nhỏ.
 
@@ -257,7 +274,8 @@ python customer_segmentation/06_cluster_profiling.py
 | File | Nội dung |
 |---|---|
 | `customer_analysis_base.csv` | RFM + nhân khẩu học + nhóm rule-based cho toàn bộ khách |
-| `customer_features_transformed.csv` | RFM sau log1p + scale (khách đã mua) |
+| `customer_features_transformed.csv` | RFM sau biến đổi + scale (khách đã mua) |
+| `feature_engineering/*.csv` | So sánh phép biến đổi, đánh giá biến ứng viên |
 | `customer_pca_scores.csv`, `pca_*.csv` | Điểm PC và kết quả PCA |
 | `k_selection/*.csv` | Chỉ số và thành phần cụm theo từng k |
 | `customer_segments.csv` | Nhãn K-Means (khách đã mua) |
@@ -274,3 +292,4 @@ python customer_segmentation/06_cluster_profiling.py
 | 2026-10-15 | Đổi business rule doanh thu: tính cả đơn `paid`/`shipped`, chỉ loại `created` và `cancelled`; RB3 = có đơn `created` |
 | 2026-10-15 | Thêm bước 4 chọn k (quét k = 2–8, đánh giá thống kê + ổn định + business); đổi luật đặt tên cụm sang ma trận Recency × Giá trị |
 | 2026-10-15 | Rule-based còn 2 nhóm: RB1 Chưa giao dịch, RB2 Đặt đơn nhưng chưa chuyển đổi (gộp đơn hủy + đơn bỏ dở, thêm `failed_order_count`, `failed_reason`) |
+| 2026-10-15 | Thêm báo cáo feature engineering: so sánh phép biến đổi theo skew, tham số scale, đánh giá biến hành vi ứng viên |
