@@ -149,14 +149,23 @@ Trang Overview trả lời doanh thu giảm là do yếu tố nào: traffic, CR 
 | Trang | Câu hỏi | Nội dung chính |
 |---|---|---|
 | Executive Overview | Doanh nghiệp đang lên hay xuống, vì sao? | KPI so với năm trước, cây KPI, xu hướng 2012–2022 |
-| Customer | Khách có mua và có quay lại không? | Funnel sign-up → đơn đầu tiên, cohort retention, phân khúc RFM từ phần 3 |
+| Customer | Khách có mua và có quay lại không? | Funnel khách đăng ký → khách đã mua, cohort retention theo tháng đơn đầu tiên, phân khúc RFM từ phần 3 |
 | Sales & Promotion | Tiền và lãi đến từ đâu, khuyến mãi có hiệu quả không? | Category và margin, AOV và margin khi có hoặc không có khuyến mãi |
-| Inventory | Tồn kho có cân với nhu cầu không? | DOS đã sửa công thức, stockout/overstock, tuổi tồn kho |
+| Inventory | Tồn kho có cân với nhu cầu không? | DOS đã sửa công thức, stockout/overstock, hàng chậm bán (DOS > 365 ngày) |
 | Logistics & Returns | Hàng có đến nơi, có bị trả lại không? | Thời gian giao theo vùng, lý do trả hàng, Wrong Size theo sản phẩm |
+
+**Biến đổi dữ liệu:** dùng SQL (DuckDB, chạy từ Python) đọc `data/raw/`, ghi ra `data/processed/powerbi/`; Power BI chỉ import.
+
+1. Nạp 13 file CSV gốc vào DuckDB, chỉ đọc.
+2. Dựng các bảng dimension, trong đó `dim_date` gồm mọi ngày từ 04/07/2012 đến 31/12/2022.
+3. Dựng từng bảng fact theo một grain rõ ràng. Doanh thu dòng hàng = số lượng × đơn giá − giảm giá.
+4. Áp dụng quy tắc cleaning từ bước EDA: giới hạn tiền hoàn bằng tiền đã trả, loại đơn thiếu bản ghi vận chuyển khỏi KPI thời gian giao, chỉ tính doanh thu từ đơn `paid`/`shipped`/`delivered`/`returned`, không dùng `sales.csv` trong model.
+5. Kiểm tra trước khi xuất: khóa chính không trùng, khóa ngoại đều có trong dimension, số dòng khớp nguồn, doanh thu dòng hàng khớp `payments`.
+6. Nạp vào Power BI: quan hệ 1-nhiều một chiều, đánh dấu `dim_date` là bảng ngày, ngày gửi/giao là quan hệ inactive, mọi measure DAX nằm trong bảng `_Measures`.
 
 **Mô hình dữ liệu (star schema):**
 
-- **Fact:** `fact_order_items` (dòng hàng), `fact_web_traffic` (ngày), `fact_inventory` (sản phẩm-tháng), `fact_shipments`, `fact_returns`.
+- **Fact:** `fact_order_items` (dòng hàng), `fact_orders` (đơn, gộp `payments` và `shipments` vì cả hai 1 dòng/đơn), `fact_returns` (lần trả), `fact_inventory` (sản phẩm-tháng), `fact_web_traffic` (ngày).
 - **Dimension:** `dim_date` (dùng chung cho mọi fact), `dim_customer`, `dim_product`, `dim_geography`, `dim_promotion`.
 
 Định nghĩa từng KPI, công thức và trang chứa KPI: [`dashboard/README.md`](dashboard/README.md).

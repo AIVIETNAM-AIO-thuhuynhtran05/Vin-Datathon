@@ -18,17 +18,40 @@ The Overview page shows which factor moved revenue (traffic, conversion, or AOV)
 | Page | Business question | Main content |
 |---|---|---|
 | **Executive Overview** | Is the business growing or shrinking, and why? | KPIs vs. last year, the KPI tree, 2012–2022 trend |
-| **Customer** | Do customers buy, and do they come back? | Sign-up → first order funnel, cohort retention, RFM segments from the segmentation part |
+| **Customer** | Do customers buy, and do they come back? | Registered → buyer funnel, cohort retention by first-order month, RFM segments from the segmentation part |
 | **Sales & Promotion** | Where do revenue and profit come from, and do promotions pay off? | Category and margin, AOV and margin with vs. without a promotion |
-| **Inventory** | Is stock in balance with demand? | Days of Supply (corrected formula), stockout/overstock, inventory age |
+| **Inventory** | Is stock in balance with demand? | Days of Supply (corrected formula), stockout/overstock, slow stock (DOS > 365 days) |
 | **Logistics & Returns** | Do orders arrive, and do they stay? | Delivery time by region, return reasons, Wrong Size by product |
 
-## 🧱 Data Model
+## 🧱 Data Processing & Data Model
 
-A star schema, so every fact table can be filtered by the same date, customer, product, and region:
+The KPIs set what the model needs. The raw CSV files are transformed with **SQL (DuckDB, run from Python)** into a star schema: fact tables hold the events, dimension tables hold who, what, where, and when. Output goes to `data/processed/powerbi/`, and Power BI only imports it.
 
-- **Fact tables:** `fact_order_items` (order line), `fact_web_traffic` (day), `fact_inventory` (product-month), `fact_shipments`, `fact_returns`.
-- **Dimension tables:** `dim_date` (shared by every fact), `dim_customer`, `dim_product`, `dim_geography`, `dim_promotion`.
+### Transformation steps
+
+1. **Load** the 13 raw CSV files from `data/raw/` into DuckDB and keep them read-only.
+2. **Build the dimensions:** `dim_date` for every day from 04/07/2012 to 31/12/2022, plus `dim_customer`, `dim_product` (one row per SKU), `dim_geography` (by zip), and `dim_promotion`.
+3. **Build each fact table at one declared grain** (see the table below). Order-line revenue = quantity × unit price − discount; cost = quantity × COGS.
+4. **Apply the cleaning rules from the EDA step:**
+   - Cap refunds at the amount paid, so net revenue is never negative.
+   - Keep orders without a shipment record out of delivery-time KPIs.
+   - Count revenue only from `paid`, `shipped`, `delivered`, and `returned` orders, the same rule as the segmentation part.
+   - Leave `sales.csv` out of the model: its revenue is before discounts and includes cancelled orders. It is used only for forecasting.
+5. **Check before export:** primary keys are unique, every foreign key exists in its dimension, row counts match the source, and order-line revenue reconciles with `payments`.
+6. **Load into Power BI:** one-to-many, single-direction relationships from each dimension; `dim_date` marked as the date table; ship and delivery dates as inactive relationships (used with `USERELATIONSHIP`); every DAX measure in one `_Measures` table.
+
+### Star schema
+
+| Fact table | 1 row = | Built from | Linked dimensions |
+|---|---|---|---|
+| `fact_order_items` | 1 product in 1 order | `order_items` + `orders` + `products` | date, customer, product, promotion |
+| `fact_orders` | 1 order | `orders` + `payments` + `shipments` (both 1:1 with orders) | date, customer, geography (delivery zip) |
+| `fact_returns` | 1 returned product | `returns` | date, product |
+| `fact_inventory` | 1 product per month | `inventory` | date, product |
+| `fact_web_traffic` | 1 day | `web_traffic` | date |
+
+- `dim_date` is shared by every fact, so YoY and MoM work everywhere and traffic, sales, and inventory line up on the same calendar.
+- `order_items` has two promotion columns (`promo_id`, `promo_id_2`): the relationship uses `promo_id`, and `promo_id_2` is an inactive relationship.
 
 ## 📐 KPIs by Page
 
@@ -40,9 +63,9 @@ A star schema, so every fact table can be filtered by the same date, customer, p
 | Executive Overview | Customers | Count of unique buyers |
 | Executive Overview | Conversion Rate (CR) | Orders ÷ Sessions |
 | Executive Overview | YoY growth | (This year − Last year) ÷ Last year |
-| Customer | First-order rate | Sign-ups with an order ÷ Sign-ups |
+| Customer | Buyer rate | Customers with a completed order ÷ Registered customers |
 | Customer | Repeat rate | Customers with 2+ orders ÷ Customers |
-| Customer | Month +1 retention | Cohort buyers in month +1 ÷ Cohort size |
+| Customer | Month +1 retention (cohort by first-order month) | Cohort buyers in month +1 ÷ Cohort size |
 | Customer | LTV (Customer Lifetime Value) | Revenue ÷ Customers |
 | Customer | Recency | Today − Last order date |
 | Customer | RFM segment | K-Means on Recency, Frequency, Monetary |
@@ -57,12 +80,14 @@ A star schema, so every fact table can be filtered by the same date, customer, p
 | Inventory | Stockout rate | Out-of-stock product-months ÷ All product-months |
 | Inventory | Overstock rate | Overstocked product-months ÷ All product-months |
 | Inventory | Sell-through | Units sold ÷ Units available |
-| Inventory | Aged stock | Stock older than 365 days ÷ Stock on hand |
+| Inventory | Slow stock | Stock with DOS > 365 days ÷ Stock on hand |
 | Logistics & Returns | Delivery days | Avg (Delivery date − Order date) |
 | Logistics & Returns | Order-to-ship days | Avg (Ship date − Order date) |
 | Logistics & Returns | Cancel rate | Cancelled orders ÷ Orders |
 | Logistics & Returns | Return rate | Returned orders ÷ Delivered orders |
 | Logistics & Returns | Wrong Size share | Wrong Size returns ÷ All returns |
+
+> **Why two KPIs changed:** sign-up dates cannot be trusted (73.8% of orders are dated before the customer's sign-up), so the funnel counts registered customers who bought, and cohorts start at the first order. The inventory file has no receipt dates, so true stock age cannot be measured; slow stock uses Days of Supply instead.
 
 > The findings below come from version 1 of the dashboard and the EDA. They will be re-checked once the rebuilt dashboard is done.
 
