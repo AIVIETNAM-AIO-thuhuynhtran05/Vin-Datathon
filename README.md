@@ -122,8 +122,6 @@ Mỗi kiểm tra có mức ERROR/WARNING/INFO kèm đề xuất xử lý. Script
 - 3.633 đơn có tổng tiền hoàn vượt tiền thanh toán, do tiền hoàn tính theo giá **trước** giảm giá.
 - 564 đơn đã gửi/giao nhưng thiếu bản ghi vận chuyển.
 - 73,8% đơn có ngày đặt trước ngày đăng ký, nên `signup_date` không đáng tin.
-- 654 SKU có giá nghi sai đơn vị.
-- `bounce_rate` nghi lưu sai thang.
 
 ## 2. Dashboard
 
