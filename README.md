@@ -1,10 +1,11 @@
 # Vin Datathon 2026 — Dashboard & Customer Analytics
 
-Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại điện tử thời trang tại Việt Nam, giai đoạn 2012–2022. Dự án gồm ba phần:
+Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại điện tử thời trang tại Việt Nam, giai đoạn 2012–2022. Dự án gồm bốn phần:
 
 - **EDA & chất lượng dữ liệu**
 - **Dashboard Power BI**
 - **Phân nhóm khách hàng** (rule-based + K-Means)
+- **Dự báo doanh thu** theo ngày cho giai đoạn 01/01/2023–01/07/2024
 
 ## Cấu trúc dự án
 
@@ -144,3 +145,20 @@ Hai lớp phân nhóm cho **toàn bộ** 121.930 khách hàng:
 Nhân khẩu học không tham gia phân cụm; chỉ dùng để mô tả chân dung từng nhóm.
 
 Flow chi tiết, định nghĩa biến và quyết định xử lý: [`customer_segmentation/README.md`](customer_segmentation/README.md).
+
+## 4. Dự báo doanh thu ✍️
+
+> ⏳ Chưa triển khai.
+
+- **Mục tiêu:** dự báo `Revenue` theo ngày.
+- **Dữ liệu huấn luyện:** `sales.csv`, từ 04/07/2012 đến 31/12/2022 (3.833 ngày, chuỗi liên tục, không thiếu ngày).
+- **Giai đoạn dự báo:** 01/01/2023–01/07/2024.
+- **Lưu ý từ EDA:**
+  - `sales.Revenue` = Σ(số lượng × đơn giá) của **mọi đơn trong ngày**: tính trước giảm giá, gồm cả đơn hủy. Định nghĩa này khác với `payments.payment_value` và với doanh thu dùng trong phần phân nhóm khách hàng.
+  - Có 382 ngày `COGS` > `Revenue`.
+  - 169 ngày doanh thu cao vượt rào IQR, tập trung vào **tháng 4–6** (mùa vụ), **không** trùng đợt khuyến mãi: chỉ 31% các ngày này có khuyến mãi, so với 45% trên toàn bộ các ngày. Median doanh thu ngày có khuyến mãi còn thấp hơn ngày không có. Nên giữ các ngày này và mô hình hóa mùa vụ, không xóa như outlier.
+- **Biến hỗ trợ có thể dùng:**
+  - Lịch khuyến mãi (`promotions`).
+  - Lưu lượng truy cập (`web_traffic`, có từ 01/01/2013).
+  - Mùa vụ: ngày trong tuần, tháng, lễ Tết.
+- `sample_submission.csv` (định dạng nộp bài) chưa có trong `data/raw/`.
