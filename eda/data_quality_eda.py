@@ -265,7 +265,8 @@ class QualityLog:
                 "check": check,
                 "description": description,
                 "severity": severity,
-                "status": "ISSUE" if invalid else "PASS",
+                # INFO là đặc điểm dữ liệu (không phải lỗi) → NOTE, tách khỏi danh sách vấn đề.
+                "status": ("NOTE" if severity == INFO else "ISSUE") if invalid else "PASS",
                 "checked_rows": checked,
                 "invalid_rows": invalid,
                 "invalid_pct": invalid / checked * 100 if checked else 0.0,
@@ -561,9 +562,9 @@ def rules_customers(d: SimpleNamespace, log: QualityLog, extras: dict[str, objec
         "(hoặc min(signup_date, first_order_date)).",
     )
     log.add(
-        "customers", "business_rule", "customer_has_order", "Khách hàng có ít nhất một đơn",
+        "customers", "observation", "customers_without_orders", "Khách đăng ký nhưng chưa đặt đơn nào (hợp lệ)",
         merged["first_order_date"].isna(), merged, columns=["customer_id", "signup_date"], severity=INFO,
-        action="Hợp lệ (khách chưa mua). Giữ trong bảng khách hàng, loại khỏi phân tích RFM.",
+        action="Không phải lỗi. Giữ trong bảng khách hàng; là nhóm RB1 (Chưa giao dịch) trong phân nhóm khách hàng.",
     )
 
 
@@ -584,9 +585,9 @@ def rules_products(d: SimpleNamespace, log: QualityLog, extras: dict[str, object
         action="Các SKU này không có giao dịch; tách riêng hoặc loại khỏi thống kê giá sản phẩm.",
     )
     log.add(
-        "products", "business_rule", "product_ever_sold", "SKU xuất hiện ít nhất một lần trong `order_items`",
+        "products", "observation", "products_never_sold", "SKU chưa từng xuất hiện trong `order_items` (hợp lệ)",
         ~sold, products, severity=INFO,
-        action="SKU chưa bán: giữ trong danh mục, loại khỏi phân tích hiệu quả sản phẩm.",
+        action="Không phải lỗi. Giữ trong danh mục; loại khỏi phân tích hiệu quả sản phẩm.",
     )
 
 
@@ -611,7 +612,7 @@ def rules_orders(d: SimpleNamespace, log: QualityLog, extras: dict[str, object])
     customers, orders, items, payments, shipments, returns = d.customers, d.orders, d.items, d.payments, d.shipments, d.returns
     merged = orders.merge(customers[["customer_id", "zip"]], on="customer_id", how="left", suffixes=("", "_customer"))
     log.add(
-        "orders", "business_rule", "zip_matches_customer", "`zip` của đơn trùng `zip` của khách",
+        "orders", "observation", "order_zip_differs_from_customer", "Đơn giao tới `zip` khác `zip` của khách",
         merged["zip_customer"].notna() & merged["zip"].ne(merged["zip_customer"]), merged,
         columns=["order_id", "customer_id", "zip", "zip_customer"], severity=INFO,
         action="Có thể hợp lệ (giao địa chỉ khác); dùng `orders.zip` cho phân tích địa lý đơn hàng.",
@@ -929,10 +930,10 @@ def rules_inventory(d: SimpleNamespace, log: QualityLog, extras: dict[str, objec
         merged, action="Lấy thuộc tính từ products làm chuẩn.",
     )
     log.add(
-        "inventory", "business_rule", "reorder_flag_informative", "`reorder_flag` có biến thiên (không hằng số)",
-        pd.Series(inventory["reorder_flag"].nunique() <= 1, index=[0]),
-        pd.DataFrame({"reorder_flag_values": [inventory["reorder_flag"].unique().tolist()]}),
-        severity=INFO, checked=1, action="Cột hằng số: loại khỏi mô hình/phân tích.",
+        "inventory", "observation", "reorder_flag_constant", "`reorder_flag` là hằng số: mọi dòng cùng một giá trị",
+        pd.Series(inventory["reorder_flag"].nunique() <= 1, index=inventory.index), inventory,
+        columns=["product_id", "snapshot_date", "reorder_flag"], severity=INFO,
+        action="Không phải lỗi dữ liệu nhưng cột không mang thông tin: loại khỏi mô hình/phân tích.",
     )
 
 
@@ -1010,6 +1011,7 @@ def write_report(
     extras: dict[str, object],
 ) -> None:
     issues = checks[checks["status"].eq("ISSUE")]
+    notes = checks[checks["status"].eq("NOTE")]
     lines = [
         "# Báo cáo chất lượng dữ liệu và EDA",
         "",
@@ -1018,14 +1020,15 @@ def write_report(
         "dòng vi phạm của từng kiểm tra nằm tại `data/processed/eda/violations/<bảng>__<kiểm tra>.csv`.",
         "",
         "Mức độ: **ERROR** — vi phạm ràng buộc cứng, phải xử lý trước khi phân tích; "
-        "**WARNING** — bất thường/nghi vấn, cần quyết định cách xử lý; **INFO** — đặc điểm dữ liệu cần biết.",
+        "**WARNING** — bất thường/nghi vấn, cần quyết định cách xử lý; **INFO** — đặc điểm dữ liệu cần biết, "
+        "**không phải lỗi** (hiển thị ℹ️).",
         "",
         "## 1. Tổng quan",
         "",
         f"- {len(overview)} bảng, {int(overview['rows'].sum()):,} dòng; {len(checks)} kiểm tra, "
         f"**{len(issues)}** có vi phạm "
-        f"({int(issues['severity'].eq(ERROR).sum())} ERROR, {int(issues['severity'].eq(WARNING).sum())} WARNING, "
-        f"{int(issues['severity'].eq(INFO).sum())} INFO).",
+        f"({int(issues['severity'].eq(ERROR).sum())} ERROR, {int(issues['severity'].eq(WARNING).sum())} WARNING) "
+        f"và **{len(notes)}** đặc điểm dữ liệu cần biết (INFO, không phải lỗi).",
         "",
         "| Nhóm | Bảng | Số dòng | Số cột | Ô thiếu (%) | Dòng trùng | ERROR | WARNING | INFO |",
         "|---|---|---:|---:|---:|---:|---:|---:|---:|",
@@ -1054,6 +1057,19 @@ def write_report(
             f"{fmt(row['invalid_pct'])}% | {cell(row['action'])} |"
         )
 
+    lines += [
+        "",
+        "### Đặc điểm dữ liệu cần biết (không phải lỗi)",
+        "",
+        "| Bảng | Đặc điểm | Số dòng | % | Ghi chú |",
+        "|---|---|---:|---:|---|",
+    ]
+    for _, row in notes.iterrows():
+        lines.append(
+            f"| `{row['table']}` | {cell(row['description'])} | {row['invalid_rows']:,} | "
+            f"{fmt(row['invalid_pct'])}% | {cell(row['action'])} |"
+        )
+
     lines += ["", "## 3. Chi tiết theo bảng"]
     category_titles = {
         "missing": "Missing values",
@@ -1062,6 +1078,7 @@ def write_report(
         "referential": "Khóa ngoại",
         "business_rule": "Ràng buộc nghiệp vụ",
         "outlier": "Outlier theo ngữ cảnh",
+        "observation": "Đặc điểm dữ liệu",
     }
     for position, summary in enumerate(overview.to_dict("records"), start=1):
         name = summary["table"]
@@ -1106,7 +1123,9 @@ def write_report(
                     )
                     lines.append(f"| {title} | {len(passed)} {scope} | — | — | 0 | ✅ PASS |")
             for _, row in subset.iterrows():
-                status = "✅ PASS" if row["status"] == "PASS" else f"❌ {fmt(row['invalid_pct'])}%"
+                status = {"PASS": "✅ PASS", "NOTE": f"ℹ️ {fmt(row['invalid_pct'])}%"}.get(
+                    row["status"], f"❌ {fmt(row['invalid_pct'])}%"
+                )
                 lines.append(
                     f"| {title} | {cell(row['description'])} | {row['severity']} | {row['checked_rows']:,} | "
                     f"{row['invalid_rows']:,} | {status} |"
@@ -1178,6 +1197,7 @@ def main() -> None:
     missing = pd.DataFrame(missing_rows)
     outliers = pd.DataFrame(outlier_rows)
     issues = checks[checks["status"].eq("ISSUE")]
+    notes = checks[checks["status"].eq("NOTE")]
     overview = pd.DataFrame(
         [
             {
@@ -1190,7 +1210,7 @@ def main() -> None:
                 "duplicate_rows": int(frame.duplicated().sum()),
                 "errors": int((issues["table"].eq(name) & issues["severity"].eq(ERROR)).sum()),
                 "warnings": int((issues["table"].eq(name) & issues["severity"].eq(WARNING)).sum()),
-                "infos": int((issues["table"].eq(name) & issues["severity"].eq(INFO)).sum()),
+                "infos": int(notes["table"].eq(name).sum()),
             }
             for name, frame in tables.items()
         ]
@@ -1204,7 +1224,8 @@ def main() -> None:
 
     print(
         f"\n{len(checks)} kiểm tra, {len(issues)} có vi phạm "
-        f"({int(issues['severity'].eq(ERROR).sum())} ERROR, {int(issues['severity'].eq(WARNING).sum())} WARNING)."
+        f"({int(issues['severity'].eq(ERROR).sum())} ERROR, {int(issues['severity'].eq(WARNING).sum())} WARNING), "
+        f"{len(notes)} đặc điểm dữ liệu (INFO, không phải lỗi)."
     )
     for _, row in issues.sort_values("severity").iterrows():
         if row["category"] != "outlier":

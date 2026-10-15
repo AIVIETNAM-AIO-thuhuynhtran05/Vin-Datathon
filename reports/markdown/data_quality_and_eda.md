@@ -2,11 +2,11 @@
 
 Tạo tự động bởi `eda/data_quality_eda.py` từ `data/raw/`. Mô tả ý nghĩa từng bảng: [`00_data_overview.md`](00_data_overview.md). Script chỉ phát hiện, **không sửa** dữ liệu gốc; dòng vi phạm của từng kiểm tra nằm tại `data/processed/eda/violations/<bảng>__<kiểm tra>.csv`.
 
-Mức độ: **ERROR** — vi phạm ràng buộc cứng, phải xử lý trước khi phân tích; **WARNING** — bất thường/nghi vấn, cần quyết định cách xử lý; **INFO** — đặc điểm dữ liệu cần biết.
+Mức độ: **ERROR** — vi phạm ràng buộc cứng, phải xử lý trước khi phân tích; **WARNING** — bất thường/nghi vấn, cần quyết định cách xử lý; **INFO** — đặc điểm dữ liệu cần biết, **không phải lỗi** (hiển thị ℹ️).
 
 ## 1. Tổng quan
 
-- 13 bảng, 2,960,188 dòng; 361 kiểm tra, **17** có vi phạm (2 ERROR, 12 WARNING, 3 INFO).
+- 13 bảng, 2,960,188 dòng; 361 kiểm tra, **14** có vi phạm (2 ERROR, 12 WARNING) và **3** đặc điểm dữ liệu cần biết (INFO, không phải lỗi).
 
 | Nhóm | Bảng | Số dòng | Số cột | Ô thiếu (%) | Dòng trùng | ERROR | WARNING | INFO |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
@@ -42,9 +42,14 @@ Mức độ: **ERROR** — vi phạm ràng buộc cứng, phải xử lý trư�
 | WARNING | `orders` | Đơn `returned` phải có ít nhất một dòng `returns` | 80 | 0.22% | Không có tiền hoàn tương ứng: coi tiền hoàn = 0, gắn cờ khi tính tỷ lệ trả. |
 | WARNING | `order_items` | Khóa nghiệp vụ (order_id, product_id) không lặp | 32 | 0.00% | Gộp các dòng cùng khóa (cộng số lượng/tiền) trước khi nối bảng để tránh nhân bản. |
 | WARNING | `returns` | Khóa nghiệp vụ (order_id, product_id) không lặp | 4 | 0.01% | Gộp các dòng cùng khóa (cộng số lượng/tiền) trước khi nối bảng để tránh nhân bản. |
-| INFO | `customers` | Khách hàng có ít nhất một đơn | 31,684 | 25.99% | Hợp lệ (khách chưa mua). Giữ trong bảng khách hàng, loại khỏi phân tích RFM. |
-| INFO | `products` | SKU xuất hiện ít nhất một lần trong `order_items` | 814 | 33.75% | SKU chưa bán: giữ trong danh mục, loại khỏi phân tích hiệu quả sản phẩm. |
-| INFO | `inventory` | `reorder_flag` có biến thiên (không hằng số) | 1 | 100% | Cột hằng số: loại khỏi mô hình/phân tích. |
+
+### Đặc điểm dữ liệu cần biết (không phải lỗi)
+
+| Bảng | Đặc điểm | Số dòng | % | Ghi chú |
+|---|---|---:|---:|---|
+| `customers` | Khách đăng ký nhưng chưa đặt đơn nào (hợp lệ) | 31,684 | 25.99% | Không phải lỗi. Giữ trong bảng khách hàng; là nhóm RB1 (Chưa giao dịch) trong phân nhóm khách hàng. |
+| `products` | SKU chưa từng xuất hiện trong `order_items` (hợp lệ) | 814 | 33.75% | Không phải lỗi. Giữ trong danh mục; loại khỏi phân tích hiệu quả sản phẩm. |
+| `inventory` | `reorder_flag` là hằng số: mọi dòng cùng một giá trị | 60,247 | 100% | Không phải lỗi dữ liệu nhưng cột không mang thông tin: loại khỏi mô hình/phân tích. |
 
 ## 3. Chi tiết theo bảng
 
@@ -67,7 +72,7 @@ Không có giá trị thiếu.
 | Khóa ngoại | `zip` tồn tại trong `geography.zip` | ERROR | 121,930 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | `city` khớp với `geography.city` theo `zip` | ERROR | 121,930 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | Ngày đăng ký ≤ ngày đặt đơn đầu tiên | WARNING | 90,246 | 80,623 | ❌ 89.34% |
-| Ràng buộc nghiệp vụ | Khách hàng có ít nhất một đơn | INFO | 121,930 | 31,684 | ❌ 25.99% |
+| Đặc điểm dữ liệu | Khách đăng ký nhưng chưa đặt đơn nào (hợp lệ) | INFO | 121,930 | 31,684 | ℹ️ 25.99% |
 
 ### 3.2. `geography` (Master)
 
@@ -105,7 +110,7 @@ Không có giá trị thiếu.
 | Kiểu dữ liệu & miền giá trị | 13 kiểm tra kiểu / miền / dấu / phạm vi ngày / định dạng text | — | — | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | Giá vốn < giá bán (`cogs` < `price`) | ERROR | 2,412 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | Giá niêm yết < 100 (nhỏ hơn ~50 lần mức thông thường — nghi sai đơn vị) | WARNING | 2,412 | 654 | ❌ 27.11% |
-| Ràng buộc nghiệp vụ | SKU xuất hiện ít nhất một lần trong `order_items` | INFO | 2,412 | 814 | ❌ 33.75% |
+| Đặc điểm dữ liệu | SKU chưa từng xuất hiện trong `order_items` (hợp lệ) | INFO | 2,412 | 814 | ℹ️ 33.75% |
 
 **Phân phối & outlier (IQR)**
 
@@ -160,13 +165,13 @@ Không có giá trị thiếu.
 | Kiểu dữ liệu & miền giá trị | 16 kiểm tra kiểu / miền / dấu / phạm vi ngày / định dạng text | — | — | 0 | ✅ PASS |
 | Khóa ngoại | `customer_id` tồn tại trong `customers.customer_id` | ERROR | 646,945 | 0 | ✅ PASS |
 | Khóa ngoại | `zip` tồn tại trong `geography.zip` | ERROR | 646,945 | 0 | ✅ PASS |
-| Ràng buộc nghiệp vụ | `zip` của đơn trùng `zip` của khách | INFO | 646,945 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | Ngày đặt ≥ ngày đăng ký của khách | WARNING | 646,945 | 477,453 | ❌ 73.80% |
 | Ràng buộc nghiệp vụ | Mỗi đơn có ít nhất một dòng `order_items` | ERROR | 646,945 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | Mỗi đơn có một bản ghi `payments` | ERROR | 646,945 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | Đơn `shipped`/`delivered`/`returned` phải có bản ghi `shipments` | ERROR | 566,631 | 564 | ❌ 0.10% |
 | Ràng buộc nghiệp vụ | Đơn `created`/`paid`/`cancelled` không có bản ghi `shipments` | ERROR | 80,314 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | Đơn `returned` phải có ít nhất một dòng `returns` | WARNING | 36,142 | 80 | ❌ 0.22% |
+| Đặc điểm dữ liệu | Đơn giao tới `zip` khác `zip` của khách | INFO | 646,945 | 0 | ✅ PASS |
 
 ### 3.6. `order_items` (Transaction)
 
@@ -373,7 +378,7 @@ Không có giá trị thiếu.
 | Ràng buộc nghiệp vụ | `stockout_flag` = 1 ⇔ `stockout_days` > 0 | ERROR | 60,247 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | `sell_through_rate` = sold / (sold + stock_on_hand) | ERROR | 60,247 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | Tên/danh mục/phân khúc khớp bảng `products` | ERROR | 60,247 | 0 | ✅ PASS |
-| Ràng buộc nghiệp vụ | `reorder_flag` có biến thiên (không hằng số) | INFO | 1 | 1 | ❌ 100% |
+| Đặc điểm dữ liệu | `reorder_flag` là hằng số: mọi dòng cùng một giá trị | INFO | 60,247 | 60,247 | ℹ️ 100% |
 
 **Phân phối & outlier (IQR)**
 
