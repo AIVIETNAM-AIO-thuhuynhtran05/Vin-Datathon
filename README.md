@@ -6,6 +6,7 @@ An analysis of a **fashion e-commerce platform** over **2012–2022**, focused o
 
 ---
 
+
 ## 📌 Project Overview
 
 The dashboard is built in **Power BI** and consists of 5 main analysis pages:
@@ -17,6 +18,21 @@ The dashboard is built in **Power BI** and consists of 5 main analysis pages:
 | **Sales** | Sales performance & profitability |
 | **Inventory** | Inventory efficiency |
 | **Logistics** | Delivery & operational performance |
+
+## 📊 Dataset Overview
+
+The dataset simulates a fashion e-commerce business in Vietnam. It contains **15 CSV files** covering the main operating period from **July 4, 2012 to December 31, 2022**, organized into four groups:
+
+- **Master — reference data:** `products`, `customers`, `promotions`, and `geography`.
+- **Transaction — business transactions:** `orders`, `order_items`, `payments`, `shipments`, `returns`, and `reviews`.
+- **Analytical — analysis:** `sales` and `sample_submission`.
+- **Operational — operations:** `inventory`, `inventory_enhanced`, and `web_traffic`.
+
+Together, the files cover the business journey from customers and products through orders, payments, shipping, returns, and reviews. They also include promotion and geographic details, monthly inventory snapshots, and daily website traffic. This supports analysis of sales and profitability, customer behavior, promotion performance, inventory management, logistics, and traffic sources.
+
+The tables are primarily linked by identifiers such as `customer_id`, `product_id`, `order_id`, `promo_id`, and postal code `zip`. Their levels of detail differ: orders are recorded at the transaction level, `order_items` at the product-line level, inventory at the product-month level, and website traffic at the daily level. These differences should be considered when joining tables to avoid double-counting.
+
+For sales forecasting, the training period runs from **July 4, 2012 to December 31, 2022**, and the test period runs from **January 1, 2023 to July 1, 2024**. The target is `Revenue`.
 
 ### Business Questions
 
@@ -363,4 +379,3 @@ Priorities are ranked by **impact on revenue/profit** and **speed of implementat
 - **DAX** — KPI Calculation & Business Metrics
 
 ---
-
