@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+data/processed/*
+!data/processed/.gitkeep
+
+# Dữ liệu gốc của cuộc thi — không đưa lên GitHub
+data/raw/
+
+# File Power BI nặng — chỉ lưu local
+dashboard/*.pbix
