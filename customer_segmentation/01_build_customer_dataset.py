@@ -10,12 +10,13 @@ rule-based (RULE_SEGMENTS trong config.py) để vẫn có mặt trong bức tra
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from config import (
     CUSTOMER_BASE_PATH,
     DEMOGRAPHIC_COLUMNS,
-    PENDING_STATUSES,
+    FAILED_STATUSES,
     OUTPUT_DIR,
     RAW_DIR,
     REFUND_ISSUES_PATH,
@@ -38,20 +39,29 @@ def require_unique(frame: pd.DataFrame, columns: list[str], table: str) -> None:
         raise ValueError(f"{table} contains duplicate key values for {columns}")
 
 
-def assign_rule_segment(customer_ids: pd.Series, orders: pd.DataFrame, has_purchase: pd.Series) -> pd.Series:
-    """Nhãn rule-based cho khách chưa có đơn phát sinh doanh thu; khách đã mua để trống (sẽ phân cụm K-Means)."""
-    statuses = orders.groupby("customer_id")["order_status"].agg(lambda values: set(values.str.lower()))
-    customer_statuses = customer_ids.map(statuses)
+def assign_rule_segment(customer_ids: pd.Series, orders: pd.DataFrame, has_purchase: pd.Series) -> pd.DataFrame:
+    """Nhãn rule-based cho khách không có đơn doanh thu; khách đã mua để trống (sẽ phân cụm K-Means).
 
-    def rule(status_set: object) -> str:
-        if not isinstance(status_set, set):
-            return "RB1"
-        if status_set & PENDING_STATUSES:
-            return "RB3"
-        return "RB2"
-
-    labels = customer_statuses.map(rule)
-    return labels.where(~has_purchase, "")
+    Trả về rule_segment, failed_order_count (số đơn hủy/bỏ dở) và failed_reason
+    (cancelled / abandoned / cancelled+abandoned) — hai cột sau chỉ có giá trị với RB2.
+    """
+    failed = orders[orders["order_status"].str.lower().isin(FAILED_STATUSES)]
+    failed_count = customer_ids.map(failed.groupby("customer_id").size()).fillna(0).astype("int64")
+    failed_reason = customer_ids.map(
+        failed.groupby("customer_id")["order_status"].agg(
+            lambda values: "+".join(sorted({FAILED_STATUSES[v] for v in values.str.lower()}))
+        )
+    )
+    has_order = customer_ids.isin(orders["customer_id"])
+    is_rule = ~has_purchase.to_numpy()
+    return pd.DataFrame(
+        {
+            "rule_segment": np.where(is_rule, np.where(has_order, "RB2", "RB1"), ""),
+            "failed_order_count": np.where(is_rule, failed_count, 0),
+            "failed_reason": np.where(is_rule & has_order.to_numpy(), failed_reason.fillna(""), ""),
+        },
+        index=customer_ids.index,
+    )
 
 
 def main() -> None:
@@ -142,7 +152,7 @@ def main() -> None:
     customer_level["order_count_all"] = (
         customer_level["customer_id"].map(orders["customer_id"].value_counts()).fillna(0).astype("int64")
     )
-    customer_level["rule_segment"] = assign_rule_segment(
+    customer_level[["rule_segment", "failed_order_count", "failed_reason"]] = assign_rule_segment(
         customer_level["customer_id"], orders, customer_level["has_purchase"]
     )
     customer_level["segment_method"] = customer_level["has_purchase"].map({True: "kmeans", False: "rule_based"})

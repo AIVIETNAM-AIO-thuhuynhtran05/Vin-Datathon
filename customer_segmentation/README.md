@@ -7,7 +7,7 @@ Phân nhóm khách hàng theo hành vi mua (RFM) bằng K-Means, mô tả chân 
 ## Flow tổng quan
 
 ```text
-                                   ┌─ chưa có đơn doanh thu ► Rule-based (RB1/RB2/RB3) ───────────────────────┐
+                                   ┌─ chưa có đơn doanh thu ► Rule-based (RB1/RB2) ───────────────────────────┐
 data/raw ─► 1. Aggregation ─► 2. QC ┤                                                                          ├─► 6. Profile ─► 7. Recommendation
            (đơn → khách)            └─ đã mua ─► 3. Feature engineering ─► 4. K-Means ─► 5. Kết quả cụm ──────┘   (toàn bộ khách)
                                                 (RFM, log, scale, PCA)      (chọn k)
@@ -61,20 +61,26 @@ data/raw ─► 1. Aggregation ─► 2. QC ┤                                 
    - `monetary` = Σ giá trị ròng của các đơn.
 5. Nối thông tin nhân khẩu học và vùng (qua `zip` → `geography.region`). Giá trị thiếu gán `Unknown`.
 
-**Kết quả:** `customer_analysis_base.csv` có 121.930 khách, kèm các cột `segment_method` (`kmeans`/`rule_based`), `rule_segment` và `order_count_all`.
+**Kết quả:** `customer_analysis_base.csv` có 121.930 khách, kèm các cột `segment_method` (`kmeans`/`rule_based`), `rule_segment`, `failed_order_count`, `failed_reason` và `order_count_all`.
 
-### Rule-based segmentation (khách chưa có đơn phát sinh doanh thu)
+### Rule-based segmentation (khách không có đơn phát sinh doanh thu)
 
-Khách chưa mua không có RFM có ý nghĩa: R không xác định, còn F = M = 0. Nếu đưa vào K-Means, họ sẽ tạo thành một cụm "toàn số 0" và làm lệch các cụm còn lại. Vì vậy họ được gán nhãn bằng luật **trước khi** phân cụm. Luật xét theo thứ tự, định nghĩa trong `config.RULE_SEGMENTS`:
+Khách không có đơn doanh thu thì không có RFM có ý nghĩa: F = M = 0, còn R không xác định. Nếu đưa vào K-Means, họ sẽ tạo thành một cụm "toàn số 0" và làm lệch các cụm còn lại. Vì vậy họ được gán nhãn bằng luật **trước khi** phân cụm (`config.RULE_SEGMENTS`).
+
+**Tiêu chí:** rule-based dành cho khách **không có hành vi tạo doanh thu để phân cụm**. Tiêu chí này rộng hơn "chưa có giao dịch", để khách đã đặt đơn nhưng không chuyển đổi vẫn có nhóm và có hành động riêng.
 
 | Mã | Nhóm | Điều kiện | Số khách | Mục tiêu |
 |---|---|---|---:|---|
 | — | → K-Means | Có ≥ 1 đơn `paid`/`shipped`/`delivered`/`returned` | 87.839 | Xem bước 4–6 |
-| RB3 | Có đơn mới tạo, chưa thanh toán | Có đơn `created` | 284 | Chuyển thành đơn thanh toán |
-| RB2 | Chỉ có đơn bị hủy | Mọi đơn đều `cancelled` | 2.123 | Tìm và gỡ lý do hủy |
-| RB1 | Chưa từng đặt đơn | Không có đơn nào | 31.684 | Kích hoạt đơn đầu tiên |
+| RB2 | Đặt đơn nhưng chưa chuyển đổi | Có ≥ 1 đơn, tất cả đều `cancelled`/`created` | 2.407 | Gỡ rào cản để chuyển đổi đơn đầu tiên |
+| RB1 | Chưa giao dịch | Đăng ký nhưng chưa đặt đơn nào | 31.684 | Kích hoạt đơn đầu tiên |
 
-Kết quả cuối: `customer_segments_all.csv`, gồm `customer_id`, `segment_method`, `segment` (RB1–3 / C0…Ck), `segment_name`. Mọi khách hàng đều có đúng một nhãn.
+**Thuộc tính của RB2** (không tách thành nhóm riêng vì phần lẻ quá nhỏ):
+
+- `failed_order_count`: 1 đơn có 2.255 khách (93,7%); 2 đơn có 140 khách; 3 đơn có 12 khách. Khách có ≥ 2 đơn thất bại thể hiện ý định mua rõ hơn, gặp rào cản lặp lại, nên được ưu tiên.
+- `failed_reason`: `cancelled` 2.123, `abandoned` (đơn `created` bỏ dở) 258, cả hai 26. Đơn `created` trải đều 2012–2022, tức là đơn bỏ dở, không phải đơn đang chờ thanh toán.
+
+Kết quả cuối: `customer_segments_all.csv`, gồm `customer_id`, `segment_method`, `segment` (RB1, RB2 / C0…Ck), `segment_name`. Mọi khách hàng đều có đúng một nhãn.
 
 ## 2. Quality check
 
@@ -216,9 +222,8 @@ Nghĩa là khi nhắm mục tiêu nên dựa vào hành vi mua, không nên dự
 
 | Loại cụm | Mục tiêu | Hành động gợi ý | KPI đo |
 |---|---|---|---|
-| RB1 Chưa từng đặt đơn | Kích hoạt đơn đầu | Voucher đơn đầu có hạn, email giới thiệu sản phẩm bán chạy | Tỷ lệ chuyển đổi đơn đầu |
-| RB2 Chỉ có đơn hủy | Gỡ lý do hủy | Khảo sát lý do hủy, nhắc giỏ hàng, hỗ trợ thanh toán | Tỷ lệ đặt lại thành công |
-| RB3 Đơn mới tạo, chưa thanh toán | Chuyển thành đơn thanh toán | Nhắc thanh toán/giỏ hàng bỏ dở trong 24–48h, hỗ trợ COD/trả góp | Tỷ lệ created → paid |
+| RB1 Chưa giao dịch | Kích hoạt đơn đầu | Voucher đơn đầu có hạn, email giới thiệu sản phẩm bán chạy | Tỷ lệ chuyển đổi đơn đầu |
+| RB2 Đặt đơn nhưng chưa chuyển đổi | Gỡ rào cản chuyển đổi | Tìm lý do hủy/bỏ dở (thanh toán, giá, giao hàng); retarget bằng đúng sản phẩm từng đặt; ưu tiên khách ≥ 2 đơn thất bại | Tỷ lệ chuyển đổi đơn đầu |
 | Champions / giá trị cao | Giữ chân, tăng giá trị | Chương trình VIP, early access, upsell sản phẩm premium; hạn chế giảm giá sâu | Retention rate, AOV |
 | Trung thành | Tăng tần suất | Tích điểm, gợi ý cross-sell theo danh mục ưa thích | Frequency, doanh thu/khách |
 | Khách mới / tiềm năng | Tạo thói quen mua lặp lại | Voucher đơn kế tiếp trong 30 ngày, onboarding email | Tỷ lệ mua lần tiếp theo |
@@ -268,3 +273,4 @@ python customer_segmentation/06_cluster_profiling.py
 | 2026-10-15 | Thêm rule-based segmentation cho khách chưa mua; thêm bước profiling (bức tranh tổng thể) |
 | 2026-10-15 | Đổi business rule doanh thu: tính cả đơn `paid`/`shipped`, chỉ loại `created` và `cancelled`; RB3 = có đơn `created` |
 | 2026-10-15 | Thêm bước 4 chọn k (quét k = 2–8, đánh giá thống kê + ổn định + business); đổi luật đặt tên cụm sang ma trận Recency × Giá trị |
+| 2026-10-15 | Rule-based còn 2 nhóm: RB1 Chưa giao dịch, RB2 Đặt đơn nhưng chưa chuyển đổi (gộp đơn hủy + đơn bỏ dở, thêm `failed_order_count`, `failed_reason`) |

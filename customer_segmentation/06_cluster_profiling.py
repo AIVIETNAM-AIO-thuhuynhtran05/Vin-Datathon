@@ -60,11 +60,9 @@ RULE_PLAYBOOK = {
     "RB1": ("Kích hoạt đơn đầu tiên",
             "Voucher đơn đầu có hạn, email/push giới thiệu sản phẩm bán chạy theo kênh thu hút của khách.",
             "Tỷ lệ chuyển đổi đơn đầu"),
-    "RB2": ("Tìm và gỡ lý do hủy",
-            "Khảo sát lý do hủy, nhắc giỏ hàng, hỗ trợ thanh toán/COD, ưu đãi đặt lại.", "Tỷ lệ đặt lại thành công"),
-    "RB3": ("Chuyển đơn mới tạo thành đơn thanh toán",
-            "Nhắc thanh toán / giỏ hàng bỏ dở trong 24–48h, hỗ trợ phương thức thanh toán (COD, trả góp).",
-            "Tỷ lệ created → paid"),
+    "RB2": ("Gỡ rào cản để chuyển đổi đơn đầu tiên",
+            "Tìm lý do hủy/bỏ dở (thanh toán, giá, giao hàng), retarget bằng đúng sản phẩm khách từng đặt; "
+            "ưu tiên khách có ≥ 2 đơn thất bại (ý định mua rõ, rào cản lặp lại).", "Tỷ lệ chuyển đổi đơn đầu tiên"),
 }
 
 
@@ -178,6 +176,17 @@ def overall_segments(names: dict[int, str]) -> pd.DataFrame:
         {**RULE_SEGMENTS, **{f"C{c}": n for c, n in names.items()}, "UNASSIGNED": "Chưa gán cụm"}
     )
     return frame
+
+
+def rule_details(frame: pd.DataFrame) -> dict[str, str]:
+    """Phân bố số đơn thất bại và lý do trong RB2."""
+    rb2 = frame[frame["segment"] == "RB2"]
+    if rb2.empty:
+        return {}
+    counts = rb2["failed_order_count"].value_counts().sort_index()
+    reasons = rb2["failed_reason"].value_counts()
+    return {"RB2": "số đơn thất bại " + ", ".join(f"{int(n)} đơn: {c:,} khách ({c / len(rb2):.1%})" for n, c in counts.items())
+            + " · lý do " + ", ".join(f"{r}: {c:,}" for r, c in reasons.items())}
 
 
 def overall_summary(frame: pd.DataFrame) -> pd.DataFrame:
@@ -318,7 +327,7 @@ def plot_categorical_lift(categorical: pd.DataFrame, tests: pd.DataFrame) -> Non
 # ------------------------------------------------------------------ report
 
 
-def rule_segment_cards(summary: pd.DataFrame, demographics: pd.DataFrame) -> list[str]:
+def rule_segment_cards(summary: pd.DataFrame, demographics: pd.DataFrame, details: dict[str, str]) -> list[str]:
     lines: list[str] = []
     for row in summary[summary["segment_method"] == "rule_based"].itertuples():
         goal, action, kpi = RULE_PLAYBOOK[row.segment]
@@ -336,16 +345,17 @@ def rule_segment_cards(summary: pd.DataFrame, demographics: pd.DataFrame) -> lis
             f"**{row.customers:,} khách ({row.customer_pct:.1f}%)** · chưa phát sinh doanh thu.",
             "",
             f"- **Chân dung nổi bật:** {portrait}.",
+            *([f"- **Chi tiết:** {details[row.segment]}."] if row.segment in details else []),
             f"- **Mục tiêu:** {goal}. **Hành động gợi ý:** {action} **KPI:** {kpi}.",
         ]
     return lines
 
 
 def write_report(profile: pd.DataFrame, index: pd.DataFrame, names: dict[int, str], categorical: pd.DataFrame,
-                 tests: pd.DataFrame, summary: pd.DataFrame, demographics: pd.DataFrame) -> None:
+                 tests: pd.DataFrame, summary: pd.DataFrame, demographics: pd.DataFrame, details: dict[str, str]) -> None:
     clusters = list(index.index)
     plots = "../data/processed/customer_segmentation/plots"
-    rule_cards = rule_segment_cards(summary, demographics)
+    rule_cards = rule_segment_cards(summary, demographics, details)
     lines = [
         "# Profile các nhóm khách hàng",
         "",
@@ -368,8 +378,8 @@ def write_report(profile: pd.DataFrame, index: pd.DataFrame, names: dict[int, st
         "",
         f"![Toàn bộ khách hàng]({plots}/profile_size_vs_revenue.png)",
         "",
-        "Luật gán nhóm (xét theo thứ tự): có đơn `paid`/`shipped`/`delivered`/`returned` → K-Means; có đơn `created` → "
-        "**RB3**; chỉ có đơn `cancelled` → **RB2**; không có đơn nào → **RB1**.",
+        "Luật gán nhóm: có ≥ 1 đơn `paid`/`shipped`/`delivered`/`returned` → K-Means; có đơn nhưng tất cả đều "
+        "`cancelled`/`created` → **RB2**; chưa đặt đơn nào → **RB1**.",
         *rule_cards,
         "",
         "## 1. Tổng quan cụm K-Means (khách đã mua)",
@@ -493,7 +503,7 @@ def main() -> None:
     plot_rfm_boxplots(features)
     plot_rank_heatmap(index, names)
     plot_categorical_lift(categorical, tests)
-    write_report(profile, index, names, categorical, tests, summary, demographics)
+    write_report(profile, index, names, categorical, tests, summary, demographics, rule_details(overall))
 
     print(summary[["segment", "segment_name", "customers", "customer_pct", "revenue_pct"]].round(1).to_string(index=False))
     print(f"\nProfiles: {PROFILE_DIR}\nReport: {PROFILE_REPORT_PATH}")

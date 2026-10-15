@@ -8,9 +8,8 @@ Khách **chưa có đơn phát sinh doanh thu** được gán nhóm theo luật 
 
 | Phương pháp | Nhóm | Tên | Khách | % khách | % doanh thu | Frequency (median) | Monetary (median) |
 |---|---|---|---:|---:|---:|---:|---:|
-| rule_based | RB1 | Chưa từng đặt đơn | 31,684 | 26.0% | 0.0% | 0 | 0 |
-| rule_based | RB2 | Chỉ có đơn bị hủy | 2,123 | 1.7% | 0.0% | 0 | 0 |
-| rule_based | RB3 | Có đơn mới tạo, chưa thanh toán | 284 | 0.2% | 0.0% | 0 | 0 |
+| rule_based | RB1 | Chưa giao dịch | 31,684 | 26.0% | 0.0% | 0 | 0 |
+| rule_based | RB2 | Đặt đơn nhưng chưa chuyển đổi | 2,407 | 2.0% | 0.0% | 0 | 0 |
 | kmeans | C0 | Đã rời bỏ | 25,216 | 20.7% | 3.5% | 1 | 14,546 |
 | kmeans | C1 | Champions | 13,535 | 11.1% | 42.1% | 15 | 367,444 |
 | kmeans | C2 | Trung thành | 21,331 | 17.5% | 39.5% | 9 | 216,897 |
@@ -18,28 +17,22 @@ Khách **chưa có đơn phát sinh doanh thu** được gán nhóm theo luật 
 
 ![Toàn bộ khách hàng](../data/processed/customer_segmentation/plots/profile_size_vs_revenue.png)
 
-Luật gán nhóm (xét theo thứ tự): có đơn `paid`/`shipped`/`delivered`/`returned` → K-Means; có đơn `created` → **RB3**; chỉ có đơn `cancelled` → **RB2**; không có đơn nào → **RB1**.
+Luật gán nhóm: có ≥ 1 đơn `paid`/`shipped`/`delivered`/`returned` → K-Means; có đơn nhưng tất cả đều `cancelled`/`created` → **RB2**; chưa đặt đơn nào → **RB1**.
 
-### RB1 — Chưa từng đặt đơn
+### RB1 — Chưa giao dịch
 
 **31,684 khách (26.0%)** · chưa phát sinh doanh thu.
 
 - **Chân dung nổi bật:** Vùng = Central 43% (lift 1.17).
 - **Mục tiêu:** Kích hoạt đơn đầu tiên. **Hành động gợi ý:** Voucher đơn đầu có hạn, email/push giới thiệu sản phẩm bán chạy theo kênh thu hút của khách. **KPI:** Tỷ lệ chuyển đổi đơn đầu.
 
-### RB2 — Chỉ có đơn bị hủy
+### RB2 — Đặt đơn nhưng chưa chuyển đổi
 
-**2,123 khách (1.7%)** · chưa phát sinh doanh thu.
+**2,407 khách (2.0%)** · chưa phát sinh doanh thu.
 
 - **Chân dung nổi bật:** gần giống toàn bộ khách (lift trong khoảng 0,85–1,15).
-- **Mục tiêu:** Tìm và gỡ lý do hủy. **Hành động gợi ý:** Khảo sát lý do hủy, nhắc giỏ hàng, hỗ trợ thanh toán/COD, ưu đãi đặt lại. **KPI:** Tỷ lệ đặt lại thành công.
-
-### RB3 — Có đơn mới tạo, chưa thanh toán
-
-**284 khách (0.2%)** · chưa phát sinh doanh thu.
-
-- **Chân dung nổi bật:** Nhóm tuổi = 55+ 7% (lift 0.67); Vùng = West 13% (lift 0.79); Kênh thu hút = direct 10% (lift 1.18).
-- **Mục tiêu:** Chuyển đơn mới tạo thành đơn thanh toán. **Hành động gợi ý:** Nhắc thanh toán / giỏ hàng bỏ dở trong 24–48h, hỗ trợ phương thức thanh toán (COD, trả góp). **KPI:** Tỷ lệ created → paid.
+- **Chi tiết:** số đơn thất bại 1 đơn: 2,255 khách (93.7%), 2 đơn: 140 khách (5.8%), 3 đơn: 12 khách (0.5%) · lý do cancelled: 2,123, abandoned: 258, abandoned+cancelled: 26.
+- **Mục tiêu:** Gỡ rào cản để chuyển đổi đơn đầu tiên. **Hành động gợi ý:** Tìm lý do hủy/bỏ dở (thanh toán, giá, giao hàng), retarget bằng đúng sản phẩm khách từng đặt; ưu tiên khách có ≥ 2 đơn thất bại (ý định mua rõ, rào cản lặp lại). **KPI:** Tỷ lệ chuyển đổi đơn đầu tiên.
 
 ## 1. Tổng quan cụm K-Means (khách đã mua)
 

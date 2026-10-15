@@ -135,9 +135,8 @@ Mỗi kiểm tra có mức ERROR/WARNING/INFO kèm đề xuất xử lý. Script
 Hai lớp phân nhóm cho **toàn bộ** 121.930 khách hàng:
 
 - **Rule-based** cho khách chưa có đơn phát sinh doanh thu:
-  - RB1 — chưa từng đặt đơn.
-  - RB2 — chỉ có đơn bị hủy.
-  - RB3 — có đơn mới tạo, chưa thanh toán.
+  - RB1 — chưa giao dịch (chưa đặt đơn nào).
+  - RB2 — đặt đơn nhưng chưa chuyển đổi (mọi đơn đều bị hủy hoặc bỏ dở).
 - **K-Means trên RFM** (log1p → scale → PCA) cho khách có đơn `paid`/`shipped`/`delivered`/`returned` (business rule: đơn đã thanh toán là có doanh thu).
 
 Nhân khẩu học không tham gia phân cụm; chỉ dùng để mô tả chân dung từng nhóm.

@@ -38,14 +38,15 @@ ALL_SEGMENTS_PATH = OUTPUT_DIR / "customer_segments_all.csv"  # rule-based + K-M
 # Business rule: đơn đã thanh toán trở đi (paid → shipped → delivered/returned) được tính doanh thu.
 # Không tính: created (chưa thanh toán) và cancelled (đã hủy). Đơn returned tính doanh thu trừ tiền hoàn.
 REVENUE_STATUSES = {"paid", "shipped", "delivered", "returned"}
-PENDING_STATUSES = {"created"}
+FAILED_STATUSES = {"cancelled": "cancelled", "created": "abandoned"}  # trạng thái → lý do không chuyển đổi
 
-# Rule-based segmentation cho khách CHƯA có đơn phát sinh doanh thu (không đưa vào K-Means).
-# Xét theo thứ tự: có đơn doanh thu → K-Means; còn lại gán nhóm đầu tiên thỏa điều kiện.
+# Rule-based segmentation cho khách KHÔNG có đơn phát sinh doanh thu (không đưa vào K-Means vì F = M = 0).
+#   có ≥ 1 đơn doanh thu                  → K-Means
+#   có ≥ 1 đơn, tất cả cancelled/created  → RB2 (kèm failed_order_count, failed_reason)
+#   chưa đặt đơn nào                      → RB1
 RULE_SEGMENTS = {
-    "RB3": "Có đơn mới tạo, chưa thanh toán",  # có đơn created
-    "RB2": "Chỉ có đơn bị hủy",              # mọi đơn đều cancelled
-    "RB1": "Chưa từng đặt đơn",              # đăng ký nhưng không có đơn nào
+    "RB2": "Đặt đơn nhưng chưa chuyển đổi",
+    "RB1": "Chưa giao dịch",
 }
 RFM_FEATURES = ["recency_days", "frequency", "monetary"]
 DEMOGRAPHIC_COLUMNS = ["gender", "age_group", "region", "acquisition_channel"]
