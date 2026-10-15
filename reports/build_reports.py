@@ -169,13 +169,19 @@ def build_html(spec: dict, draft: bool) -> str:
 
 
 def print_pdf(browser: str, html_path: Path, pdf_path: Path) -> None:
+    """In ra file tạm rồi thay file đích, để không báo thành công khi PDF cũ đang bị khóa (đang mở)."""
+    temp_pdf = html_path.with_suffix(".pdf")
     command = [
         browser, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", "--print-to-pdf-no-header",
-        "--run-all-compositor-stages-before-draw", f"--print-to-pdf={pdf_path}", html_path.as_uri(),
+        "--run-all-compositor-stages-before-draw", f"--print-to-pdf={temp_pdf}", html_path.as_uri(),
     ]
     subprocess.run(command, check=True, capture_output=True, timeout=180)
-    if not pdf_path.is_file() or pdf_path.stat().st_size == 0:
-        raise RuntimeError(f"Trình duyệt không tạo được {pdf_path}")
+    if not temp_pdf.is_file() or temp_pdf.stat().st_size == 0:
+        raise RuntimeError(f"Trình duyệt không tạo được {pdf_path.name}")
+    try:
+        shutil.copyfile(temp_pdf, pdf_path)  # copy (không move) vì thư mục tạm có thể ở ổ đĩa khác
+    except PermissionError as error:
+        raise PermissionError(f"Không ghi đè được {pdf_path} — hãy đóng file PDF đang mở rồi chạy lại.") from error
 
 
 def main() -> None:
