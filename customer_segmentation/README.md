@@ -256,15 +256,26 @@ Dữ liệu **không có** nghề nghiệp hay thu nhập.
 
 Nghĩa là khi nhắm mục tiêu nên dựa vào **hành vi mua** (danh mục, thanh toán, thiết bị, kênh đặt đơn), không nên dựa vào nhân khẩu học.
 
-**Chân dung từng cụm** (chi tiết và biểu đồ: [`customer_segment_profiles.md`](../reports/markdown/customer_segment_profiles.md)):
+**Chân dung từng nhóm** (chi tiết và biểu đồ: [`customer_segment_profiles.md`](../reports/markdown/customer_segment_profiles.md)). Recency tính đến 01/01/2023, giá trị là median; lift = tỷ lệ trong nhóm ÷ tỷ lệ toàn bộ khách.
 
-| Cụm | Hành vi | Chân dung nổi bật (lift) |
-|---|---|---|
-| C0 Champions | Mua gần nhất (149 ngày), nhiều đơn nhất (17), chi nhiều nhất | Streetwear 96% (1,21), thẻ tín dụng 96% (1,36), organic search 52% (1,35), vùng West (1,73), mobile (1,20); rất ít đến từ email (0,49) |
-| C2 Trung thành | 9 đơn, chi cao, nhưng đã gần 2 năm chưa mua (659 ngày) | Streetwear 95% (1,19), thẻ tín dụng 88% (1,25), organic search (1,19); ít dùng COD (0,52) |
-| C4 Ngủ đông | 3 đơn, AOV cao hơn mặt bằng, ~4,5 năm chưa mua | Đặt đơn trực tiếp (1,53) và qua email (1,35); Apple Pay (1,60), chuyển khoản (1,58), COD (1,35) |
-| C3 Khách mới / tiềm năng | Mua gần đây (206 ngày), mới 4 đơn | Đặt trực tiếp (1,33) và qua email (1,17); Apple Pay (1,29), COD (1,17) |
-| C1 Đã rời bỏ | 1 đơn, giá trị thấp nhất, ~6,5 năm chưa mua | GenZ (2,93) và Outdoor (2,31) cao bất thường; tablet (2,17), PayPal (2,08), referral (1,76) |
+*Nhóm rule-based: chưa tạo ra doanh thu (34.091 khách, 28%)*
+
+- **RB1 · Chưa giao dịch** (31.684 khách, 26,0%): đăng ký nhưng chưa đặt đơn nào. Tập trung ở vùng Central (43%, lift 1,17); các đặc điểm khác gần như toàn bộ khách. Cứ 4 khách đăng ký thì 1 khách chưa từng mua: cơ hội rõ nhất ở đầu phễu.
+- **RB2 · Đặt đơn nhưng chưa chuyển đổi** (2.407 khách, 2,0%): mọi đơn đều bị hủy (2.123) hoặc bỏ dở (258), cả hai 26. Chân dung gần như toàn bộ khách. Đã có ý định mua nhưng gặp rào cản; 152 khách thất bại từ 2 đơn trở lên có ý định rõ nhất.
+
+*Nhóm K-Means: khách đã mua (87.839 khách, 72%)*
+
+- **C0 · Champions** (12.384 khách, 43,6% doanh thu): mua gần nhất (~5 tháng), nhiều đơn nhất (17), chi cao nhất (421 nghìn), gắn bó lâu nhất. Gần như chỉ mua Streetwear (96%, lift 1,21), trả bằng thẻ tín dụng (96%, lift 1,36), đến từ tìm kiếm tự nhiên (52%, lift 1,35), mua trên mobile (lift 1,20), tập trung ở vùng West (lift 1,73), **rất ít đến từ email** (lift 0,49). Chỉ ~10% tổng số khách nhưng gánh gần một nửa doanh thu, và doanh nghiệp chưa có kênh liên lạc trực tiếp với họ.
+- **C2 · Trung thành** (19.103 khách, 34,9% doanh thu): từng mua nhiều (9 đơn, 219 nghìn) nhưng **gần 2 năm chưa quay lại** (659 ngày). Chân dung giống Champions: Streetwear (95%), thẻ tín dụng (88%), tìm kiếm tự nhiên; rất ít dùng COD (lift 0,52). Là "Champions của ngày trước" đang trôi dần; nếu không kéo lại sẽ thành Ngủ đông.
+- **C4 · Ngủ đông** (24.995 khách, 13,1% doanh thu): 3 đơn, AOV cao hơn mặt bằng (22,6 nghìn) nhưng ~4,5 năm chưa mua. Đặt trực tiếp (lift 1,53) và qua email (1,35); thanh toán Apple Pay (1,60), chuyển khoản (1,58), COD (1,35). Mỗi đơn từng có giá trị khá và nhóm này phản hồi với email, nên đánh thức được bằng kênh chi phí thấp.
+- **C3 · Khách mới / tiềm năng** (8.945 khách, 5,7% doanh thu): mua gần đây (~7 tháng) nhưng mới 4 đơn, gắn bó ngắn. Đặt trực tiếp (1,33) và qua email (1,17); Apple Pay (1,29), COD (1,17); ít ở vùng West (0,70). Giai đoạn quyết định họ thành Trung thành hay rơi rụng, và liên lạc được qua email.
+- **C1 · Đã rời bỏ** (22.412 khách, 2,6% doanh thu): chỉ 1 đơn, giá trị thấp nhất (12,8 nghìn), ~6,5 năm chưa quay lại, tỷ lệ trả hàng cao nhất (7,8%). Chân dung khác hẳn: mua GenZ (lift 2,93) và Outdoor (2,31) nhiều bất thường, dùng tablet (2,17), PayPal (2,08), đến từ giới thiệu (1,76). Giả thuyết cần kiểm chứng: trải nghiệm sản phẩm GenZ/Outdoor có thể là lý do rời bỏ.
+
+**Tóm lại:**
+
+1. **Doanh thu phụ thuộc vào một nhóm nhỏ:** Champions và Trung thành là 35,8% khách đã mua nhưng mang về 78,5% doanh thu, và gần như đều là khách Streetwear trả bằng thẻ tín dụng.
+2. **Rủi ro lớn nhất:** nhóm Trung thành đã gần 2 năm chưa mua.
+3. **Cơ hội lớn nhất ở đầu phễu:** 28% khách đăng ký chưa từng tạo ra doanh thu.
 
 ## 8. Recommendation để tăng doanh thu
 
