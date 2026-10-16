@@ -19,7 +19,7 @@ data/raw ─► 1. Aggregation ─► 2. QC ┤                                 
 | 3a | `02_transform_features.py` | Feature engineering: so sánh phép biến đổi, scale, đánh giá biến ứng viên → [`reports/markdown/customer_segmentation_features.md`](../reports/markdown/customer_segmentation_features.md) | ✅ |
 | 3b | `03_pca_analysis.py` | PCA + giải thích → [`reports/markdown/customer_segmentation_pca.md`](../reports/markdown/customer_segmentation_pca.md) | ✅ |
 | 4 | `04_select_k.py` | Quét k = 2–8, đánh giá thống kê + ổn định + business → [`reports/markdown/customer_segmentation_k_selection.md`](../reports/markdown/customer_segmentation_k_selection.md) | ✅ |
-| 5 | `05_kmeans_segmentation.py` | K-Means với k đã chọn → `customer_segments.csv` (`customer_id`, `cluster`) | ✍️ tự điều chỉnh |
+| 5 | `05_kmeans_segmentation.py` | K-Means với k = 5 → `customer_segments.csv` (`customer_id`, `cluster`) | ✅ |
 | 6–8 | `06_cluster_profiling.py` | Bức tranh tổng thể, profile, gợi ý hành động → [`reports/markdown/customer_segment_profiles.md`](../reports/markdown/customer_segment_profiles.md) | ✅ (chạy lại sau khi chốt K-Means) |
 
 `config.py` chứa toàn bộ đường dẫn, định nghĩa trạng thái đơn, luật rule-based và phép biến đổi biến. `behavior_features.py` tạo các biến hành vi dùng chung cho bước 02 và 06. `segment_naming.py` chứa luật đặt tên cụm gợi ý và hành động theo nhóm. `plot_style.py` chứa màu và style biểu đồ.
@@ -174,37 +174,67 @@ Bước này **chỉ đánh giá, không ghi nhãn**. Quét k = 2–8 trên `cus
 | 7 | 0,346 | 85.550 | 0,873 | 0,986 | 3,2% | 6/7 | — |
 | 8 | 0,364 | 86.943 | 0,800 | 0,961 | 3,0% | 6/8 | — |
 
-- **Elbow:** k = 4. **Xếp hạng thống kê:** k = 3 tốt nhất trong các k đạt điều kiện.
+- **Elbow:** k = 4. **Xếp hạng thống kê:** k = 3 và k = 5 đồng hạng (3,3) trong các k đạt điều kiện.
 - **Ứng viên:**
   - **k = 3**: tách rõ nhất, nhưng gộp chung khách mới mua gần đây với khách đã lâu không quay lại.
   - **k = 5**: thống kê tốt hơn k = 4 (silhouette 0,374 so với 0,346; DB 0,846 so với 0,990), đủ ổn định. Tách thêm 2 nhóm có hành động riêng: **Khách mới / tiềm năng** (10%, mua gần đây nhưng ít đơn) và **Đã rời bỏ** (25%, chỉ 2,6% doanh thu).
 
-✍️ **k đã chọn:** … · **Lý do:** …
+**k đã chọn: 5.** Lý do:
 
-## 5. K-Means — `05_kmeans_segmentation.py` ✍️
+1. **Đạt cả 3 lớp điều kiện:** cụm nhỏ nhất 10,2% (≥ 5%), 5/5 cụm là 5 loại hành vi khác nhau, ARI 0,956 (≥ 0,9).
+2. **Nhiều nhóm hành động nhất trong các k đạt điều kiện** (k = 3, 4, 5). Mỗi nhóm thêm là một chiến lược riêng triển khai được.
+3. **Thống kê không kém k = 3:** đồng hạng 3,3; Davies-Bouldin 0,846 là tốt nhất trong các k đạt điều kiện; silhouette 0,374 cao hơn k = 4 (0,346).
+4. **Vì sao không chọn k = 3:** cụm "Trung thành" của k = 3 có recency median 977 ngày, tức gộp chung khách mới mua gần đây nhưng ít đơn với khách đã lâu không quay lại. k = 5 tách được 2 nhóm cần hành động ngược nhau:
+   - **Khách mới / tiềm năng** (R = 206 ngày, F = 4): cần nuôi dưỡng để mua lặp lại.
+   - **Đã rời bỏ** (R = 2.391 ngày, 2,6% doanh thu) tách khỏi **Ngủ đông** (R = 1.650 ngày, 13,1% doanh thu): không tốn ngân sách win-back cho nhóm gần như đã mất.
+5. **Vì sao không chọn k ≥ 6:** cụm nhỏ nhất dưới 5% (4,2%, 3,2%, 3,0%) và có hai cụm cùng loại hành vi (5/6, 6/7, 6/8), tức hai cụm phải xử lý giống nhau.
 
-- **Chạy với k đã chọn:** `--k <k>`. Đầu vào mặc định là PCA; `--input scaled` để chạy trên dữ liệu đã scale.
-- **Đầu ra bắt buộc:** `customer_segments.csv` gồm 2 cột `customer_id`, `cluster`.
+Báo cáo chọn k ([`customer_segmentation_k_selection.md`](../reports/markdown/customer_segmentation_k_selection.md)) sinh các lý do này trực tiếp từ số liệu.
 
-## 6. Kết quả phân cụm ✍️
+## 5. K-Means — `05_kmeans_segmentation.py`
 
-| Cụm | Tên gợi ý | Số khách | % khách | % doanh thu | Recency (median, ngày) | Frequency (median) | Monetary (median) | AOV |
+- Chạy `python customer_segmentation/05_kmeans_segmentation.py --k 5` trên 2 thành phần PCA (94,6% phương sai).
+- **Đầu ra:** `customer_segments.csv` gồm `customer_id`, `cluster`; `customer_segments_all.csv` ghép thêm nhóm rule-based, nên **mọi khách đều có đúng một nhãn**.
+
+## 6. Kết quả phân cụm
+
+**Khách hàng được gom như sau** (121.930 khách đã đăng ký):
+
+```text
+121.930 khách đã đăng ký
+├── Rule-based, gán trước khi chạy mô hình (34.091 khách, 28,0%)
+│   ├── RB1 Chưa giao dịch .................. 31.684 (26,0%)
+│   └── RB2 Đặt đơn nhưng chưa chuyển đổi ...  2.407 ( 2,0%)
+└── K-Means k = 5 trên RFM (87.839 khách đã mua, 72,0%)
+    ├── C0 Champions ........................ 12.384 · 43,6% doanh thu
+    ├── C2 Trung thành ...................... 19.103 · 34,9% doanh thu
+    ├── C4 Ngủ đông ......................... 24.995 · 13,1% doanh thu
+    ├── C3 Khách mới / tiềm năng ............  8.945 ·  5,7% doanh thu
+    └── C1 Đã rời bỏ ........................ 22.412 ·  2,6% doanh thu
+```
+
+| Cụm | Tên | Số khách | % khách đã mua | % doanh thu | Recency (median, ngày) | Frequency (median) | Monetary (median) | AOV |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| 0 | … | | | | | | | |
-| 1 | … | | | | | | | |
+| C0 | Champions | 12.384 | 14,1% | 43,6% | 149 | 17 | 421.487 | 23.888 |
+| C2 | Trung thành | 19.103 | 21,7% | 34,9% | 659 | 9 | 219.127 | 23.764 |
+| C4 | Ngủ đông | 24.995 | 28,5% | 13,1% | 1.650 | 3 | 64.500 | 22.627 |
+| C3 | Khách mới / tiềm năng | 8.945 | 10,2% | 5,7% | 206 | 4 | 80.930 | 20.775 |
+| C1 | Đã rời bỏ | 22.412 | 25,5% | 2,6% | 2.391 | 1 | 12.788 | 10.487 |
 
-**Cách đặt tên gợi ý** (`segment_naming.py`): ma trận Recency × Giá trị (giá trị = trung bình phân vị F và M của cụm so với mặt bằng):
+**Champions và Trung thành chiếm 35,8% khách đã mua nhưng mang về 78,5% doanh thu.**
+
+**Cách đặt tên** (`segment_naming.py`): ma trận Recency × Giá trị (giá trị = trung bình phân vị F và M của cụm so với mặt bằng):
 
 | | Giá trị cao | Giá trị thấp |
 |---|---|---|
 | **Mua gần đây** | Champions → Trung thành | Khách mới / tiềm năng → Cần nuôi dưỡng |
 | **Lâu chưa mua** | Có nguy cơ rời bỏ | Ngủ đông → Đã rời bỏ |
 
-Hai cụm rơi cùng ô thì cụm điểm cao hơn giữ tên, cụm sau lùi sang tên kế tiếp (theo mũi tên). Tên chỉ là gợi ý; tên chính thức đặt sau khi xem profile.
+Hai cụm rơi cùng ô thì cụm điểm cao hơn giữ tên, cụm sau lùi sang tên kế tiếp (theo mũi tên). Tên đã được đối chiếu với profile ở mục 7.
 
 Biểu đồ: các cụm trên PC1–PC2, boxplot RFM theo cụm, heatmap z-score của từng chỉ số theo cụm.
 
-## 7. Customer group profile ✍️
+## 7. Customer group profile
 
 **Biến mô tả có trong dữ liệu:**
 
@@ -219,42 +249,38 @@ Dữ liệu **không có** nghề nghiệp hay thu nhập.
 - **Lift** = % trong cụm / % toàn bộ khách: lift > 1,15 là đặc trưng nổi bật của cụm, < 0,85 là ít gặp trong cụm.
 - **Chi-square + Cramér's V** để biết biến nào thực sự khác biệt giữa các cụm. Với ~87 nghìn khách thì p-value gần như luôn rất nhỏ, nên đánh giá bằng Cramér's V: < 0,1 nghĩa là biến gần như không phân biệt cụm, không nên dùng để nhắm mục tiêu.
 
-**Lưu ý từ bản chạy thử (k = 4):**
+**Biến nào phân biệt cụm (k = 5):**
 
-- **Không phân biệt được cụm** (Cramér's V < 0,01): giới tính, nhóm tuổi, kênh thu hút.
-- **Phân biệt ở mức trung bình** (V ≈ 0,14–0,24): danh mục ưa thích, phương thức thanh toán, thiết bị, nguồn đơn.
+- **Mức trung bình** (V = 0,11–0,25): danh mục ưa thích (0,245), phương thức thanh toán (0,185), thiết bị (0,143), nguồn đơn (0,128), vùng (0,113).
+- **Không đáng kể** (V < 0,01): kênh thu hút, giới tính, nhóm tuổi.
 
-Nghĩa là khi nhắm mục tiêu nên dựa vào hành vi mua, không nên dựa vào nhân khẩu học.
+Nghĩa là khi nhắm mục tiêu nên dựa vào **hành vi mua** (danh mục, thanh toán, thiết bị, kênh đặt đơn), không nên dựa vào nhân khẩu học.
 
-**Mẫu ghi cho mỗi cụm:**
+**Chân dung từng cụm** (chi tiết và biểu đồ: [`customer_segment_profiles.md`](../reports/markdown/customer_segment_profiles.md)):
 
-> **Cụm X – <tên>** (n khách, x% khách, y% doanh thu)
-> - Hành vi: …
-> - Chân dung nổi bật: nhóm tuổi … (lift …), vùng …, kênh …
-> - Khác biệt so với trung bình: …
+| Cụm | Hành vi | Chân dung nổi bật (lift) |
+|---|---|---|
+| C0 Champions | Mua gần nhất (149 ngày), nhiều đơn nhất (17), chi nhiều nhất | Streetwear 96% (1,21), thẻ tín dụng 96% (1,36), organic search 52% (1,35), vùng West (1,73), mobile (1,20); rất ít đến từ email (0,49) |
+| C2 Trung thành | 9 đơn, chi cao, nhưng đã gần 2 năm chưa mua (659 ngày) | Streetwear 95% (1,19), thẻ tín dụng 88% (1,25), organic search (1,19); ít dùng COD (0,52) |
+| C4 Ngủ đông | 3 đơn, AOV cao hơn mặt bằng, ~4,5 năm chưa mua | Đặt đơn trực tiếp (1,53) và qua email (1,35); Apple Pay (1,60), chuyển khoản (1,58), COD (1,35) |
+| C3 Khách mới / tiềm năng | Mua gần đây (206 ngày), mới 4 đơn | Đặt trực tiếp (1,33) và qua email (1,17); Apple Pay (1,29), COD (1,17) |
+| C1 Đã rời bỏ | 1 đơn, giá trị thấp nhất, ~6,5 năm chưa mua | GenZ (2,93) và Outdoor (2,31) cao bất thường; tablet (2,17), PayPal (2,08), referral (1,76) |
 
-## 8. Recommendation để tăng doanh thu ✍️
+## 8. Recommendation để tăng doanh thu
 
-**Khung hành động theo loại cụm** (điều chỉnh theo kết quả thực tế):
+Hành động cho từng nhóm dựa trên profile ở mục 7. **Thứ tự ưu tiên** theo doanh thu đang có hoặc có thể kéo về so với chi phí:
 
-| Loại cụm | Mục tiêu | Hành động gợi ý | KPI đo |
-|---|---|---|---|
-| RB1 Chưa giao dịch | Kích hoạt đơn đầu | Voucher đơn đầu có hạn, email giới thiệu sản phẩm bán chạy | Tỷ lệ chuyển đổi đơn đầu |
-| RB2 Đặt đơn nhưng chưa chuyển đổi | Gỡ rào cản chuyển đổi | Tìm lý do hủy/bỏ dở (thanh toán, giá, giao hàng); retarget bằng đúng sản phẩm từng đặt; ưu tiên khách ≥ 2 đơn thất bại | Tỷ lệ chuyển đổi đơn đầu |
-| Champions / giá trị cao | Giữ chân, tăng giá trị | Chương trình VIP, early access, upsell sản phẩm premium; hạn chế giảm giá sâu | Retention rate, AOV |
-| Trung thành | Tăng tần suất | Tích điểm, gợi ý cross-sell theo danh mục ưa thích | Frequency, doanh thu/khách |
-| Khách mới / tiềm năng | Tạo thói quen mua lặp lại | Voucher đơn kế tiếp trong 30 ngày, onboarding email | Tỷ lệ mua lần tiếp theo |
-| Cần nuôi dưỡng | Nâng giá trị đơn | Bundle/khuyến mãi theo ngưỡng giá trị đơn | AOV, Frequency |
-| Có nguy cơ rời bỏ | Kéo quay lại | Win-back cá nhân hóa, ưu đãi có hạn theo danh mục từng mua nhiều | Reactivation rate |
-| Ngủ đông | Đánh thức với chi phí thấp | Remarketing/email theo mùa, ưu đãi nhỏ; đo phản hồi trước khi đầu tư | Reactivation rate |
-| Đã rời bỏ | Tối ưu chi phí | Chỉ dùng kênh chi phí gần 0 (email định kỳ); không đầu tư ưu đãi lớn | Chi phí/đơn kéo về |
+| Ưu tiên | Nhóm | Mục tiêu | Hành động | Kênh tiếp cận (theo profile) | KPI |
+|---:|---|---|---|---|---|
+| 1 | C0 Champions (43,6% doanh thu) | Giữ chân, tăng giá trị | Hạng VIP, quyền mua sớm bộ sưu tập Streetwear mới, upsell sản phẩm premium; **không** giảm giá sâu | App/mobile và ưu đãi gắn thẻ tín dụng; chủ động thu email vì nhóm này hiện ít đến từ email (lift 0,49) | Tỷ lệ giữ chân 90 ngày, AOV |
+| 1 | C2 Trung thành (34,9% doanh thu) | Kéo quay lại trước khi trôi thành Ngủ đông | Nhắc mua theo mốc 6/12 tháng từ đơn cuối, điểm thưởng có hạn dùng, cross-sell Streetwear | Organic search (SEO/landing page Streetwear), email nhắc mua | % khách mua lại trong 12 tháng, Frequency |
+| 2 | RB1 Chưa giao dịch (26,0% khách) | Kích hoạt đơn đầu tiên | Voucher đơn đầu có hạn, email giới thiệu sản phẩm bán chạy | Email/push theo kênh thu hút của khách | Tỷ lệ chuyển đổi đơn đầu |
+| 2 | RB2 Đặt đơn nhưng chưa chuyển đổi (2,0% khách) | Gỡ rào cản chuyển đổi | Tìm lý do hủy/bỏ dở (thanh toán, giá, giao hàng), retarget đúng sản phẩm từng đặt; ưu tiên 152 khách có ≥ 2 đơn thất bại | Email/retargeting theo sản phẩm đã đặt | Tỷ lệ chuyển đổi đơn đầu |
+| 3 | C3 Khách mới / tiềm năng (5,7% doanh thu) | Tạo thói quen mua lặp lại | Voucher đơn kế tiếp trong 30 ngày, email onboarding, gợi ý sản phẩm bán chạy | Email và kênh trực tiếp (lift 1,17 và 1,33) | Tỷ lệ mua lần tiếp theo trong 90 ngày |
+| 4 | C4 Ngủ đông (13,1% doanh thu) | Đánh thức với chi phí thấp | Email theo mùa, ưu đãi nhỏ; chạy thử với nhóm đối chứng trước khi tăng ngân sách | Email (lift 1,35), kênh trực tiếp | Reactivation rate |
+| 5 | C1 Đã rời bỏ (2,6% doanh thu) | Tối ưu chi phí | Chỉ email định kỳ, không ưu đãi lớn; rà soát trải nghiệm sản phẩm GenZ/Outdoor vì nhóm này mua hai danh mục đó nhiều bất thường | Email chi phí gần 0 | Chi phí/đơn kéo về |
 
-✍️ Với mỗi cụm thực tế, ghi lại:
-
-- Hành động cụ thể.
-- Kênh tiếp cận (dựa trên profile).
-- Ước tính tác động doanh thu, ví dụ: tăng 5% tỷ lệ mua lại ở cụm X × AOV × số khách = +… doanh thu.
-- Ưu tiên triển khai.
+**Nguyên tắc chung:** đo mọi hành động bằng nhóm đối chứng (giữ 10% khách mỗi nhóm không nhận ưu đãi) để biết doanh thu tăng thêm thật sự. Ước tính tác động doanh thu cần tỷ lệ phản hồi thực tế từ lần chạy thử, nên chưa đưa con số ở đây.
 
 ---
 
@@ -293,3 +319,4 @@ python customer_segmentation/06_cluster_profiling.py
 | 2026-10-15 | Thêm bước 4 chọn k (quét k = 2–8, đánh giá thống kê + ổn định + business); đổi luật đặt tên cụm sang ma trận Recency × Giá trị |
 | 2026-10-15 | Rule-based còn 2 nhóm: RB1 Chưa giao dịch, RB2 Đặt đơn nhưng chưa chuyển đổi (gộp đơn hủy + đơn bỏ dở, thêm `failed_order_count`, `failed_reason`) |
 | 2026-10-15 | Thêm báo cáo feature engineering: so sánh phép biến đổi theo skew, tham số scale, đánh giá biến hành vi ứng viên |
+| 2026-10-16 | Chốt k = 5 kèm lý do; điền kết quả cụm, profile và hành động theo từng nhóm; bước chọn k ưu tiên k đạt điều kiện có nhiều nhóm hành động nhất |

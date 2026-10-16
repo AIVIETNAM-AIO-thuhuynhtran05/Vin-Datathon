@@ -113,8 +113,49 @@ def recommend(metrics: pd.DataFrame, args: argparse.Namespace) -> tuple[int, pd.
         & (scored["distinct_actions"] == scored["k"])
     )
     pool = scored[scored["eligible"]] if scored["eligible"].any() else scored[scored["k"] >= args.min_business_k]
-    best = pool.sort_values(["stat_rank", "k"]).iloc[0]
+    # Trong các k đạt điều kiện, chọn k cho nhiều nhóm hành động nhất (mỗi nhóm thêm là một chiến lược riêng
+    # triển khai được); hòa thì lấy k có hạng thống kê tốt hơn, rồi k nhỏ hơn.
+    best = pool.sort_values(["distinct_actions", "stat_rank", "k"], ascending=[False, True, True]).iloc[0]
     return int(best["k"]), scored
+
+
+def choice_reasons(scored: pd.DataFrame, profiles: pd.DataFrame, chosen: int, args: argparse.Namespace) -> list[str]:
+    """Lý do chọn k, sinh từ số liệu: đạt điều kiện, so với k nhỏ hơn đạt điều kiện, và vì sao không lấy k lớn hơn."""
+    pick = scored[scored["k"] == chosen].iloc[0]
+    eligible = scored[scored["eligible"]]
+    names = lambda k: set(profiles.loc[profiles["k"] == k, "suggested_name"].map(base_name))
+    reasons = [
+        f"1. **Đạt cả 3 lớp điều kiện:** cụm nhỏ nhất {pick['min_cluster_pct']:.1f}% (≥ {args.min_cluster_pct:.0f}%), "
+        f"{int(pick['distinct_actions'])}/{chosen} cụm là các loại hành vi khác nhau, ARI {pick['stability_ari']:.3f} "
+        f"(≥ {STABILITY_THRESHOLD}).",
+        f"2. **Nhiều nhóm hành động nhất trong các k đạt điều kiện** "
+        f"(k = {', '.join(str(int(k)) for k in eligible['k'])}): mỗi nhóm thêm là một chiến lược riêng triển khai được.",
+    ]
+    best_rank = eligible["stat_rank"].min()
+    reasons.append(
+        f"3. **Thống kê không kém:** hạng thống kê {pick['stat_rank']:.1f} "
+        + ("(tốt nhất, đồng hạng)" if pick["stat_rank"] <= best_rank else f"(tốt nhất là {best_rank:.1f})")
+        + f"; Davies-Bouldin {pick['davies_bouldin']:.3f}, silhouette {pick['silhouette']:.3f}."
+    )
+    for _, row in eligible[eligible["k"] < chosen].iterrows():
+        k = int(row["k"])
+        missing = sorted(names(chosen) - names(k), key=NAME_ORDER.index)
+        if missing:
+            reasons.append(
+                f"- **Không chọn k = {k}:** không tách được {', '.join(f'*{n}*' for n in missing)}; "
+                "các khách này bị gộp vào nhóm khác và nhận chung một hành động."
+            )
+    for _, row in scored[scored["k"] > chosen].iterrows():
+        problems = []
+        if row["min_cluster_pct"] < args.min_cluster_pct:
+            problems.append(f"cụm nhỏ nhất chỉ {row['min_cluster_pct']:.1f}%")
+        if row["distinct_actions"] < row["k"]:
+            problems.append(f"chỉ {int(row['distinct_actions'])}/{int(row['k'])} nhóm hành động khác nhau (có cụm trùng loại)")
+        if row["stability_ari"] < STABILITY_THRESHOLD:
+            problems.append(f"ARI {row['stability_ari']:.3f} chưa đủ ổn định")
+        if problems:
+            reasons.append(f"- **Không chọn k = {int(row['k'])}:** {'; '.join(problems)}.")
+    return reasons
 
 
 def plot_metrics(scored: pd.DataFrame, chosen: int, elbow: int, args: argparse.Namespace) -> None:
@@ -142,7 +183,7 @@ def plot_metrics(scored: pd.DataFrame, chosen: int, elbow: int, args: argparse.N
         axis.set_title(title, loc="left", fontsize=10)
         axis.set_xticks(scored["k"])
         axis.set_xlabel("k")
-    figure.suptitle(f"Chọn số cụm — vùng cam là k gợi ý ({chosen})", x=0.01, ha="left", fontweight="bold")
+    figure.suptitle(f"Chọn số cụm — vùng cam là k được chọn ({chosen})", x=0.01, ha="left", fontweight="bold")
     figure.tight_layout()
     figure.savefig(PLOT_DIR / "k_selection_metrics.png", dpi=110)
     plt.close(figure)
@@ -223,23 +264,25 @@ def write_report(scored: pd.DataFrame, profiles: pd.DataFrame, chosen: int, elbo
         f"![Chỉ số theo k]({plots}/k_selection_metrics.png)",
         "",
         f"- Elbow của inertia: **k = {elbow}**. Silhouette cao nhất: **k = {best_silhouette}**.",
-        f"- **Gợi ý: k = {chosen}**: silhouette {pick['silhouette']:.3f}, ARI {pick['stability_ari']:.3f}, "
-        f"cụm nhỏ nhất {pick['min_cluster_pct']:.1f}%, {int(pick['distinct_actions'])} nhóm hành động khác nhau.",
-        "- Đây là gợi ý; quyết định cuối nên dựa vào mục 3: nhóm nào cần chiến lược riêng và có đủ nguồn lực để triển khai.",
         "",
-        "## 3. Mỗi k chia khách hàng thành những nhóm nào",
+        f"## 3. Chọn k = {chosen}",
+        "",
+        *choice_reasons(scored, profiles, chosen, args),
+        "",
+        f"## 4. k = {chosen} chia khách hàng thành những nhóm nào",
         "",
         f"![Thành phần nhóm theo k]({plots}/k_selection_composition.png)",
     ]
-    for k in sorted(profiles["k"].unique()):
+    ordered = [chosen] + [k for k in sorted(profiles["k"].unique()) if k != chosen]
+    for k in ordered:
         if k < args.min_business_k:
             continue
         part = profiles[profiles["k"] == k]
         lines += [
             "",
-            f"### k = {k}" + (" (gợi ý)" if k == chosen else ""),
+            f"### k = {k} (được chọn)" if k == chosen else f"### So sánh: k = {k}",
             "",
-            "| Cụm | Tên gợi ý | % khách | % doanh thu | Recency (ngày) | Frequency | Monetary |",
+            "| Cụm | Tên nhóm | % khách | % doanh thu | Recency (ngày) | Frequency | Monetary |",
             "|---:|---|---:|---:|---:|---:|---:|",
         ]
         for _, row in part.iterrows():
@@ -249,7 +292,7 @@ def write_report(scored: pd.DataFrame, profiles: pd.DataFrame, chosen: int, elbo
             )
     lines += [
         "",
-        "## 4. Bước tiếp theo",
+        "## 5. Bước tiếp theo",
         "",
         "```bash",
         f"python customer_segmentation/05_kmeans_segmentation.py --k {chosen}",
@@ -297,7 +340,7 @@ def main() -> None:
     plot_metrics(scored, chosen, elbow, args)
     plot_composition(profiles, chosen)
     write_report(scored, profiles, chosen, elbow, args, len(features))
-    print(f"\nElbow k={elbow}; suggested k={chosen}. Report: {K_SELECTION_REPORT_PATH}")
+    print(f"\nElbow k={elbow}; chosen k={chosen}. Report: {K_SELECTION_REPORT_PATH}")
 
 
 if __name__ == "__main__":

@@ -289,7 +289,7 @@ def rule_segment_cards(summary: pd.DataFrame, demographics: pd.DataFrame, detail
             "",
             f"- **Chân dung nổi bật:** {portrait}.",
             *([f"- **Chi tiết:** {details[row.segment]}."] if row.segment in details else []),
-            f"- **Mục tiêu:** {goal}. **Hành động gợi ý:** {action} **KPI:** {kpi}.",
+            f"- **Mục tiêu:** {goal}. **Hành động:** {action} **KPI:** {kpi}.",
         ]
     return lines
 
@@ -303,7 +303,7 @@ def write_report(profile: pd.DataFrame, index: pd.DataFrame, names: dict[int, st
         "# Profile các nhóm khách hàng",
         "",
         "Tạo tự động bởi `customer_segmentation/06_cluster_profiling.py` từ nhãn cụm trong `customer_segments.csv`. "
-        "**Tên cụm là gợi ý** theo ma trận Recency × Giá trị (`segment_naming.py`) — chỉnh lại khi diễn giải. Dữ liệu không có biến nghề nghiệp/thu nhập; "
+        "Tên cụm đặt theo ma trận Recency × Giá trị (`segment_naming.py`) và đã đối chiếu với profile bên dưới. Dữ liệu không có biến nghề nghiệp/thu nhập; "
         "chân dung dựa trên giới tính, nhóm tuổi, vùng, kênh thu hút và hành vi mua.",
         "",
         "## 0. Bức tranh tổng thể toàn bộ khách hàng",
@@ -327,7 +327,7 @@ def write_report(profile: pd.DataFrame, index: pd.DataFrame, names: dict[int, st
         "",
         "## 1. Tổng quan cụm K-Means (khách đã mua)",
         "",
-        "| Cụm | Tên gợi ý | Khách | % khách | % doanh thu | Recency (ngày) | Frequency | Monetary | AOV | Tỷ lệ trả | Dùng KM |",
+        "| Cụm | Tên nhóm | Khách | % khách | % doanh thu | Recency (ngày) | Frequency | Monetary | AOV | Tỷ lệ trả | Dùng KM |",
         "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for cluster in [*clusters, "Tổng"]:
@@ -391,8 +391,8 @@ def write_report(profile: pd.DataFrame, index: pd.DataFrame, names: dict[int, st
                 f"{LABELS[t['variable']]} = {t['value']} {t['pct_in_cluster']:.0f}% (lift {t['lift']:.2f})"
                 for _, t in traits.head(6).iterrows()) + ".")
         lines += [
-            f"- **Mục tiêu:** {goal}. **Hành động gợi ý:** {action} **KPI:** {kpi}.",
-            "- ✍️ Ước tính tác động: … (vd +x% tỷ lệ mua lại × AOV × số khách).",
+            f"- **Mục tiêu:** {goal}. **Hành động:** {action} **KPI:** {kpi}.",
+            "- **Kênh tiếp cận và thứ tự ưu tiên:** xem mục 8 *Recommendation* của README phân cụm.",
         ]
     lines += [
         "",
