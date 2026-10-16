@@ -62,10 +62,13 @@ REPORTS = {
     "forecasting": {
         "output": "04_Forecasting_report.pdf",
         "title": "Báo cáo Dự báo doanh thu",
-        "subtitle": "Dự báo Revenue theo ngày, 01/01/2023 – 01/07/2024",
-        "sources": [ROOT / "forecasting" / "README.md"],
-        "status": "pending",
-        "pending_reason": "Chưa triển khai mô hình dự báo.",
+        "subtitle": "Dự báo Revenue và COGS theo ngày, 01/01/2023 – 01/07/2024: EDA chuỗi thời gian, mô hình, ensemble và SHAP",
+        "sources": [
+            ROOT / "forecasting" / "README.md",
+            MARKDOWN_DIR / "forecasting_eda.md",
+            MARKDOWN_DIR / "forecasting_models.md",
+        ],
+        "status": "ready",
     },
 }
 

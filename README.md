@@ -1,11 +1,11 @@
-# Vin Datathon 2026 — Dashboard & Customer Analytics
+# Vin Datathon 2026 — Dashboard, Customer Analytics & Forecasting
 
 Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại điện tử thời trang tại Việt Nam, giai đoạn 2012–2022. Dự án gồm bốn phần:
 
 - **EDA & chất lượng dữ liệu**
 - **Dashboard Power BI** (5 trang, đi từ tổng quan đến chi tiết)
 - **Phân nhóm khách hàng** (rule-based + K-Means)
-- **Dự báo doanh thu** theo ngày cho giai đoạn 01/01/2023–01/07/2024
+- **Dự báo doanh thu** theo ngày cho giai đoạn 01/01/2023–01/07/2024 (ensemble Ridge + LightGBM, R² 0.807 trên năm 2022)
 
 ## Cấu trúc dự án
 
@@ -25,8 +25,13 @@ Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại 
 │   ├── 04_select_k.py                   # Quét k, đánh giá thống kê + ổn định + business
 │   ├── 05_kmeans_segmentation.py        # K-Means với k đã chọn (tự điều chỉnh)
 │   └── 06_cluster_profiling.py          # Bức tranh tổng thể, profile, gợi ý hành động
-├── forecasting/                         # Dự báo doanh thu — xem README riêng (chưa có code)
-│   └── README.md                        # Flow: yêu cầu đề → dữ liệu → FE → validation → mô hình → submission
+├── forecasting/                         # Dự báo doanh thu — xem README riêng
+│   ├── README.md                        # Các bước, ý nghĩa từng bước, kết quả
+│   ├── config.py                        # Đường dẫn, seed, fold, ngày Tết & lễ, style biểu đồ
+│   ├── features.py                      # 81 đặc trưng chỉ từ lịch + lịch khuyến mãi suy từ promotions.csv
+│   ├── 01_time_series_eda.py            # EDA chuỗi thời gian
+│   ├── 02_train_forecast.py             # CV, ensemble 3 tầng, calibration, SHAP, file nộp
+│   └── submission.csv                   # File nộp, 548 dòng Date,Revenue,COGS
 ├── dashboard/
 │   ├── README.md                        # Cấu trúc 5 trang, mô hình dữ liệu, KPI & phân tích
 │   ├── build_powerbi_tables.py          # Gộp CSV gốc thành 10 bảng import vào Power BI (DuckDB)
@@ -35,7 +40,7 @@ Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại 
 │   ├── 01_EDA_report.pdf                # EDA & chất lượng dữ liệu
 │   ├── 02_Dashboard_report.pdf          # (chờ dựng lại dashboard)
 │   ├── 03_Customer_Segmentation_report.pdf
-│   ├── 04_Forecasting_report.pdf        # (chờ triển khai)
+│   ├── 04_Forecasting_report.pdf        # Dự báo doanh thu
 │   ├── build_reports.py                 # Dựng PDF từ Markdown
 │   └── markdown/                        # Nguồn Markdown của các báo cáo
 │       ├── 00_data_overview.md          # Mô tả tổng quan & ý nghĩa từng bảng
@@ -43,12 +48,15 @@ Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại 
 │       ├── customer_segmentation_pca.md # (tự sinh) PCA
 │       ├── customer_segmentation_k_selection.md  # (tự sinh) Chọn số cụm k
 │       ├── customer_segment_profiles.md # (tự sinh) Profile các nhóm khách hàng
+│       ├── forecasting_eda.md           # (tự sinh) EDA chuỗi thời gian
+│       ├── forecasting_models.md        # (tự sinh) Mô hình, CV, SHAP, dự báo
 │       └── dashboard_analysis_recommendations.md
 ├── data/
 │   ├── raw/                             # CSV gốc (chỉ đọc)
 │   └── processed/                       # Tự sinh, không đưa vào Git
 │       ├── eda/
-│       └── customer_segmentation/
+│       ├── customer_segmentation/
+│       └── forecasting/
 ├── notebooks/                           # Notebook thử nghiệm
 ├── docs/                                # Đề thi, tài liệu tham khảo
 └── requirements.txt
@@ -103,7 +111,11 @@ python customer_segmentation/04_select_k.py                    # chọn k
 python customer_segmentation/05_kmeans_segmentation.py --k <k> # tự điều chỉnh
 python customer_segmentation/06_cluster_profiling.py
 
-# 3. Dựng báo cáo PDF (cần Microsoft Edge hoặc Google Chrome)
+# 3. Dự báo doanh thu (khoảng 10 phút)
+python forecasting/01_time_series_eda.py
+python forecasting/02_train_forecast.py
+
+# 4. Dựng báo cáo PDF (cần Microsoft Edge hoặc Google Chrome)
 python reports/build_reports.py                  # thêm --include-drafts để dựng cả bản nháp
 ```
 
@@ -160,7 +172,7 @@ Trang Overview trả lời doanh thu giảm là do yếu tố nào: traffic, CR 
 1. Nạp 13 file CSV gốc vào DuckDB, chỉ đọc.
 2. Gộp các bảng cùng grain: dòng hàng + đơn + giá vốn sản phẩm + loại khuyến mãi (`sales_lines`); đơn + thanh toán + vận chuyển (`orders`); lần trả + khách và zip của đơn (`returns`). Bảng khách hàng thêm vùng và phân khúc từ phần 3.
 3. Lọc các đơn không tạo ra doanh thu: 7.275 đơn `created` và 59.462 đơn `cancelled` (tổng 66.737 đơn, 10,3%). `sales_lines` chỉ giữ đơn `paid`/`shipped`/`delivered`/`returned`; `orders` vẫn giữ mọi trạng thái để tính tỷ lệ hủy.
-4. Áp dụng quy tắc cleaning từ bước EDA: giới hạn tiền hoàn bằng tiền đã trả, loại đơn thiếu bản ghi vận chuyển khỏi KPI thời gian giao, bỏ cột hằng số `reorder_flag`, không dùng `sales.csv`.
+4. Áp dụng quy tắc cleaning từ bước EDA: giới hạn tiền hoàn bằng tiền đã trả, loại đơn thiếu bản ghi vận chuyển khỏi KPI thời gian giao, bỏ cột hằng số `reorder_flag`, không dùng `sales.csv`. Web traffic chỉ dùng theo ngày: `traffic_source` mỗi ngày chỉ có 1 nguồn nên không tách được theo kênh, `bounce_rate` (0,3–0,6%) thấp phi thực tế nên không đưa vào KPI.
 5. Kiểm tra trước khi xuất (script dừng nếu không đạt): khóa chính không trùng, khóa ngoại đều có trong bảng tra cứu, số dòng khớp nguồn, doanh thu dòng hàng khớp `payments` của cùng các đơn.
 6. Data modeling trong Power BI: bảng ngày tạo bằng DAX và đánh dấu Date Table; quan hệ 1-nhiều một chiều từ bảng tra cứu sang bảng dữ liệu (ngày gửi/giao là quan hệ inactive); mọi measure DAX nằm trong bảng `_Measures`.
 
@@ -199,19 +211,26 @@ Nhân khẩu học không tham gia phân cụm; chỉ dùng để mô tả chân
 
 Flow chi tiết, định nghĩa biến và quyết định xử lý: [`customer_segmentation/README.md`](customer_segmentation/README.md).
 
-## 4. Dự báo doanh thu ✍️
+## 4. Dự báo doanh thu
 
-> ⏳ Chưa triển khai. Flow, yêu cầu đề, lưu ý leakage và kế hoạch validation: [`forecasting/README.md`](forecasting/README.md).
+Dự báo `Revenue` và `COGS` theo ngày cho 548 ngày (01/01/2023 – 01/07/2024) từ `sales.csv`. Chi tiết từng bước và ý nghĩa: [`forecasting/README.md`](forecasting/README.md). Báo cáo: `reports/04_Forecasting_report.pdf`.
 
-- **Mục tiêu:** dự báo `Revenue` theo ngày.
-- **Dữ liệu huấn luyện:** `sales.csv`, từ 04/07/2012 đến 31/12/2022 (3.833 ngày, chuỗi liên tục, không thiếu ngày).
-- **Giai đoạn dự báo:** 01/01/2023–01/07/2024.
-- **Lưu ý từ EDA:**
-  - `sales.Revenue` = Σ(số lượng × đơn giá) của **mọi đơn trong ngày**: tính trước giảm giá, gồm cả đơn hủy. Định nghĩa này khác với `payments.payment_value` và với doanh thu dùng trong phần phân nhóm khách hàng.
-  - Có 382 ngày `COGS` > `Revenue`.
-  - 169 ngày doanh thu cao vượt rào IQR, tập trung vào **tháng 4–6** (mùa vụ), **không** trùng đợt khuyến mãi: chỉ 31% các ngày này có khuyến mãi, so với 45% trên toàn bộ các ngày. Median doanh thu ngày có khuyến mãi còn thấp hơn ngày không có. Nên giữ các ngày này và mô hình hóa mùa vụ, không xóa như outlier.
-- **Biến hỗ trợ có thể dùng:**
-  - Lịch khuyến mãi (`promotions`).
-  - Lưu lượng truy cập (`web_traffic`, có từ 01/01/2013).
-  - Mùa vụ: ngày trong tuần, tháng, lễ Tết.
-- `sample_submission.csv` (định dạng nộp bài) chưa có trong `data/raw/`.
+| Bước | Làm gì | Ý nghĩa |
+|---|---|---|
+| 1. Hiểu ràng buộc | Horizon 18 tháng, cấm dùng giá trị test và dữ liệu ngoài, phải tái lập được | Không dùng được lag; mọi đặc trưng phải tính được cho 2023–2024 |
+| 2. EDA chuỗi thời gian | 4 giai đoạn (mức sau 2019 thấp hơn đỉnh 43.5%), mùa vụ tháng 4–6, cuối tháng cao gấp đôi giữa tháng, Tết, năm chẵn/lẻ, margin Q3 | Mỗi pattern thành một nhóm đặc trưng hoặc một quyết định mô hình |
+| 3. Đặc trưng chỉ từ lịch | 81 đặc trưng: lịch, đầu/cuối tháng, Fourier, Tết, lễ, lịch khuyến mãi suy từ `promotions.csv`, năm lẻ | Kiểm soát leakage từ gốc: không cần giá trị nào của tập test |
+| 4. Validation theo thời gian | 3 fold (validate 2022, 2021, 07/2021–06/2022), baseline seasonal naive, MAE hình dạng | Đo đúng tình huống dự báo năm sau; tách lỗi hình dạng khỏi lỗi mức |
+| 5. Mô hình gốc | Ridge + Fourier, LightGBM ưu tiên 2014–2018, 4 LightGBM chuyên biệt theo quý, Prophet | Ba họ mô hình khác bản chất để ensemble có giá trị |
+| 6. Ensemble | 0.3 × Ridge + 0.7 × LightGBM theo quý (Prophet nhận trọng số 0) | Trọng số chọn trên CV; giảm MAE hình dạng 3.5% so với mô hình đơn tốt nhất |
+| 7. Calibration mức | Hệ số c = thực tế 2022 ÷ dự báo 2022 (1.080 cho Revenue) | Sửa độ lệch mức 4–7% mà không dùng leaderboard |
+| 8. SHAP | Mùa vụ năm 58.7%, giai đoạn & xu hướng 25.4%, đầu/cuối tháng 6.3%, khuyến mãi 2.6% | Giải thích dự báo bằng ngôn ngữ kinh doanh |
+| 9. Submission | `forecasting/submission.csv`, 548 dòng | Đúng định dạng, chạy lại ra đúng file (`random_state = 42`) |
+
+**Kết quả:**
+
+- Trên năm 2022, ensemble + calibration đạt **MAE 544K VND/ngày, R² 0.807** cho Revenue, giảm **37%** sai số so với seasonal naive (MAE 864K, R² 0.445).
+- Dự báo Revenue **2023: 1.18 tỷ** (2022: 1.17 tỷ), **6 tháng đầu 2024: 0.71 tỷ** (cùng kỳ 2022: 0.69 tỷ): doanh thu đi ngang, chưa hồi phục.
+- Tháng 4–6 chiếm 37.9% doanh thu dự báo 2023; Q3 2023 dự báo bán lỗ (COGS/Revenue 1.05), trùng thời điểm chiến dịch giảm 50% chỉ chạy năm lẻ.
+- Chưa có `sample_submission.csv` để đối chiếu thứ tự dòng; file nộp đang xếp theo thứ tự ngày.
+
