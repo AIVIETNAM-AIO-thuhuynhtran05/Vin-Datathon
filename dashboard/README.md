@@ -32,13 +32,13 @@ The KPIs set what the model needs. The raw CSV files are transformed with **SQL 
 1. **Load** the 13 raw CSV files from `data/raw/` into DuckDB and keep them read-only.
 2. **Build the dimensions:** `dim_date` for every day from 04/07/2012 to 31/12/2022, plus `dim_customer`, `dim_product` (one row per SKU), `dim_geography` (by zip), and `dim_promotion`.
 3. **Build each fact table at one declared grain** (see the table below). Order-line revenue = quantity × unit price − discount; cost = quantity × COGS.
-4. **Apply the cleaning rules from the EDA step:**
+4. **Filter out orders that bring in no revenue:** 7,275 `created` and 59,462 `cancelled` orders (66,737 in total, 10.3% of all orders). `fact_order_items` keeps only `paid`, `shipped`, `delivered`, and `returned` orders, the same rule as the segmentation part; `fact_orders` keeps every status so the cancel rate can still be measured.
+5. **Apply the cleaning rules from the EDA step:**
    - Cap refunds at the amount paid, so net revenue is never negative.
    - Keep orders without a shipment record out of delivery-time KPIs.
-   - Count revenue only from `paid`, `shipped`, `delivered`, and `returned` orders, the same rule as the segmentation part.
    - Leave `sales.csv` out of the model: its revenue is before discounts and includes cancelled orders. It is used only for forecasting.
-5. **Check before export:** primary keys are unique, every foreign key exists in its dimension, row counts match the source, and order-line revenue reconciles with `payments`.
-6. **Load into Power BI:** one-to-many, single-direction relationships from each dimension; `dim_date` marked as the date table; ship and delivery dates as inactive relationships (used with `USERELATIONSHIP`); every DAX measure in one `_Measures` table.
+6. **Check before export:** primary keys are unique, every foreign key exists in its dimension, row counts match the source, and order-line revenue reconciles with `payments`.
+7. **Load into Power BI:** one-to-many, single-direction relationships from each dimension; `dim_date` marked as the date table; ship and delivery dates as inactive relationships (used with `USERELATIONSHIP`); every DAX measure in one `_Measures` table.
 
 ### Star schema
 
@@ -55,12 +55,14 @@ The KPIs set what the model needs. The raw CSV files are transformed with **SQL 
 
 ## 📐 KPIs by Page
 
+Sales KPIs (revenue, orders, AOV, margin, customers) count only orders that bring in revenue: `paid`, `shipped`, `delivered`, and `returned`. `created` and `cancelled` orders appear only in the cancel rate.
+
 | Page | KPI | Formula |
 |---|---|---|
 | Executive Overview | Revenue | Sessions × Conversion Rate × AOV |
 | Executive Overview | Gross Profit | Revenue × Gross Margin % |
-| Executive Overview | Orders | Count of unique orders |
-| Executive Overview | Customers | Count of unique buyers |
+| Executive Overview | Orders | Count of revenue orders (paid, shipped, delivered, returned) |
+| Executive Overview | Customers | Count of buyers with a revenue order |
 | Executive Overview | Conversion Rate (CR) | Orders ÷ Sessions |
 | Executive Overview | YoY growth | (This year − Last year) ÷ Last year |
 | Customer | Buyer rate | Customers with a completed order ÷ Registered customers |
@@ -83,7 +85,7 @@ The KPIs set what the model needs. The raw CSV files are transformed with **SQL 
 | Inventory | Slow stock | Stock with DOS > 365 days ÷ Stock on hand |
 | Logistics & Returns | Delivery days | Avg (Delivery date − Order date) |
 | Logistics & Returns | Order-to-ship days | Avg (Ship date − Order date) |
-| Logistics & Returns | Cancel rate | Cancelled orders ÷ Orders |
+| Logistics & Returns | Cancel rate | Cancelled orders ÷ All orders placed |
 | Logistics & Returns | Return rate | Returned orders ÷ Delivered orders |
 | Logistics & Returns | Wrong Size share | Wrong Size returns ÷ All returns |
 

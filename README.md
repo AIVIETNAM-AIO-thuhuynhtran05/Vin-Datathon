@@ -159,9 +159,10 @@ Trang Overview trả lời doanh thu giảm là do yếu tố nào: traffic, CR 
 1. Nạp 13 file CSV gốc vào DuckDB, chỉ đọc.
 2. Dựng các bảng dimension, trong đó `dim_date` gồm mọi ngày từ 04/07/2012 đến 31/12/2022.
 3. Dựng từng bảng fact theo một grain rõ ràng. Doanh thu dòng hàng = số lượng × đơn giá − giảm giá.
-4. Áp dụng quy tắc cleaning từ bước EDA: giới hạn tiền hoàn bằng tiền đã trả, loại đơn thiếu bản ghi vận chuyển khỏi KPI thời gian giao, chỉ tính doanh thu từ đơn `paid`/`shipped`/`delivered`/`returned`, không dùng `sales.csv` trong model.
-5. Kiểm tra trước khi xuất: khóa chính không trùng, khóa ngoại đều có trong dimension, số dòng khớp nguồn, doanh thu dòng hàng khớp `payments`.
-6. Nạp vào Power BI: quan hệ 1-nhiều một chiều, đánh dấu `dim_date` là bảng ngày, ngày gửi/giao là quan hệ inactive, mọi measure DAX nằm trong bảng `_Measures`.
+4. Lọc các đơn không tạo ra doanh thu: 7.275 đơn `created` và 59.462 đơn `cancelled` (tổng 66.737 đơn, 10,3%). Bảng dòng hàng chỉ giữ đơn `paid`/`shipped`/`delivered`/`returned`; bảng đơn hàng vẫn giữ mọi trạng thái để tính tỷ lệ hủy.
+5. Áp dụng quy tắc cleaning từ bước EDA: giới hạn tiền hoàn bằng tiền đã trả, loại đơn thiếu bản ghi vận chuyển khỏi KPI thời gian giao, không dùng `sales.csv` trong model.
+6. Kiểm tra trước khi xuất: khóa chính không trùng, khóa ngoại đều có trong dimension, số dòng khớp nguồn, doanh thu dòng hàng khớp `payments`.
+7. Nạp vào Power BI: quan hệ 1-nhiều một chiều, đánh dấu `dim_date` là bảng ngày, ngày gửi/giao là quan hệ inactive, mọi measure DAX nằm trong bảng `_Measures`.
 
 **Mô hình dữ liệu (star schema):**
 

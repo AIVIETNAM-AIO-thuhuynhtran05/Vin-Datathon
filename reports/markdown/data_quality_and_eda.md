@@ -6,7 +6,7 @@ Mức độ: **ERROR** — vi phạm ràng buộc cứng, phải xử lý trư�
 
 ## 1. Tổng quan
 
-- 13 bảng, 2,960,188 dòng; 361 kiểm tra, **14** có vi phạm (2 ERROR, 12 WARNING) và **3** đặc điểm dữ liệu cần biết (INFO, không phải lỗi).
+- 13 bảng, 2,960,188 dòng; 362 kiểm tra, **14** có vi phạm (2 ERROR, 12 WARNING) và **3** đặc điểm dữ liệu cần biết (INFO, không phải lỗi).
 
 | Nhóm | Bảng | Số dòng | Số cột | Ô thiếu (%) | Dòng trùng | ERROR | WARNING | INFO |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
@@ -61,6 +61,14 @@ Mức độ: **ERROR** — vi phạm ràng buộc cứng, phải xử lý trư�
 
 Không có giá trị thiếu.
 
+**Giá trị phân loại** (cột có ≤ 15 giá trị)
+
+| Cột | Số giá trị | Giá trị (số dòng, %) |
+|---|---:|---|
+| `gender` | 3 | `Female` 59,640 (48.9%), `Male` 57,457 (47.1%), `Non-binary` 4,833 (4.0%) |
+| `age_group` | 5 | `25-34` 36,342 (29.8%), `35-44` 31,920 (26.2%), `45-54` 23,172 (19.0%), `18-24` 17,039 (14.0%), `55+` 13,457 (11.0%) |
+| `acquisition_channel` | 6 | `organic_search` 36,450 (29.9%), `social_media` 24,448 (20.1%), `paid_search` 24,285 (19.9%), `email_campaign` 14,674 (12.0%), `referral` 12,270 (10.1%), `direct` 9,803 (8.0%) |
+
 **Kiểm tra**
 
 | Nhóm | Kiểm tra | Mức | Đã kiểm | Vi phạm | Kết quả |
@@ -82,6 +90,12 @@ Không có giá trị thiếu.
 
 Không có giá trị thiếu.
 
+**Giá trị phân loại** (cột có ≤ 15 giá trị)
+
+| Cột | Số giá trị | Giá trị (số dòng, %) |
+|---|---:|---|
+| `region` | 3 | `East` 18,929 (47.4%), `Central` 14,512 (36.3%), `West` 6,507 (16.3%) |
+
 **Kiểm tra**
 
 | Nhóm | Kiểm tra | Mức | Đã kiểm | Vi phạm | Kết quả |
@@ -98,6 +112,15 @@ Không có giá trị thiếu.
 **Missing values**
 
 Không có giá trị thiếu.
+
+**Giá trị phân loại** (cột có ≤ 15 giá trị)
+
+| Cột | Số giá trị | Giá trị (số dòng, %) |
+|---|---:|---|
+| `category` | 4 | `Streetwear` 1,320 (54.7%), `Outdoor` 743 (30.8%), `Casual` 201 (8.3%), `GenZ` 148 (6.1%) |
+| `segment` | 8 | `Activewear` 598 (24.8%), `Everyday` 405 (16.8%), `Performance` 347 (14.4%), `Balanced` 306 (12.7%), `Standard` 262 (10.9%), `Premium` 177 (7.3%), `All-weather` 169 (7.0%), `Trendy` 148 (6.1%) |
+| `size` | 4 | `S` 603 (25%), `M` 603 (25%), `L` 603 (25%), `XL` 603 (25%) |
+| `color` | 10 | `black` 242 (10.0%), `orange` 242 (10.0%), `green` 241 (10.0%), `silver` 241 (10.0%), `pink` 241 (10.0%), `yellow` 241 (10.0%), `red` 241 (10.0%), `blue` 241 (10.0%), `white` 241 (10.0%), `purple` 241 (10.0%) |
 
 **Kiểm tra**
 
@@ -129,6 +152,17 @@ Không có giá trị thiếu.
 |---|---:|---:|---|---|
 | `applicable_category` | 40 | 80% | có ý nghĩa nghiệp vụ | Trống = áp dụng mọi danh mục. Điền 'ALL'. |
 
+**Giá trị phân loại** (cột có ≤ 15 giá trị)
+
+| Cột | Số giá trị | Giá trị (số dòng, %) |
+|---|---:|---|
+| `promo_type` | 2 | `percentage` 45 (90%), `fixed` 5 (10%) |
+| `discount_value` | 6 | `12` 10 (20%), `18` 10 (20%), `10` 10 (20%), `20` 10 (20%), `50` 5 (10%), `15` 5 (10%) |
+| `applicable_category` | 2 | `(trống)` 40 (80%), `Streetwear` 5 (10%), `Outdoor` 5 (10%) |
+| `promo_channel` | 5 | `all_channels` 19 (38%), `online` 13 (26%), `email` 7 (14.0%), `social_media` 6 (12%), `in_store` 5 (10%) |
+| `stackable_flag` | 2 | `0` 38 (76%), `1` 12 (24%) |
+| `min_order_value` | 5 | `0` 31 (62%), `150000` 8 (16%), `100000` 5 (10%), `50000` 4 (8%), `200000` 2 (4%) |
+
 **Kiểm tra**
 
 | Nhóm | Kiểm tra | Mức | Đã kiểm | Vi phạm | Kết quả |
@@ -154,6 +188,15 @@ Không có giá trị thiếu.
 **Missing values**
 
 Không có giá trị thiếu.
+
+**Giá trị phân loại** (cột có ≤ 15 giá trị)
+
+| Cột | Số giá trị | Giá trị (số dòng, %) |
+|---|---:|---|
+| `order_status` | 6 | `delivered` 516,716 (79.9%), `cancelled` 59,462 (9.2%), `returned` 36,142 (5.6%), `shipped` 13,773 (2.1%), `paid` 13,577 (2.1%), `created` 7,275 (1.1%) |
+| `payment_method` | 5 | `credit_card` 356,352 (55.1%), `paypal` 97,018 (15.0%), `cod` 96,681 (14.9%), `apple_pay` 64,763 (10.0%), `bank_transfer` 32,131 (5.0%) |
+| `device_type` | 3 | `mobile` 291,482 (45.1%), `desktop` 258,855 (40.0%), `tablet` 96,608 (14.9%) |
+| `order_source` | 6 | `organic_search` 181,495 (28.1%), `paid_search` 141,652 (21.9%), `social_media` 129,710 (20.0%), `email_campaign` 77,572 (12.0%), `referral` 64,565 (10.0%), `direct` 51,951 (8.0%) |
 
 **Kiểm tra**
 
@@ -184,6 +227,13 @@ Không có giá trị thiếu.
 | `promo_id` | 438,353 | 61.34% | có ý nghĩa nghiệp vụ | Trống = dòng không dùng khuyến mãi. Giữ nguyên / điền 'NO_PROMO' khi phân tích. |
 | `promo_id_2` | 714,463 | 99.97% | có ý nghĩa nghiệp vụ | Trống = không có khuyến mãi cộng dồn. Giữ nguyên / điền 'NO_PROMO'. |
 
+**Giá trị phân loại** (cột có ≤ 15 giá trị)
+
+| Cột | Số giá trị | Giá trị (số dòng, %) |
+|---|---:|---|
+| `quantity` | 8 | `1` 89,623 (12.5%), `5` 89,608 (12.5%), `6` 89,500 (12.5%), `2` 89,394 (12.5%), `7` 89,348 (12.5%), `4` 89,263 (12.5%), `3` 89,252 (12.5%), `8` 88,681 (12.4%) |
+| `promo_id_2` | 2 | `(trống)` 714,463 (100.0%), `PROMO-0015` 132 (0.0%), `PROMO-0025` 74 (0.0%) |
+
 **Kiểm tra**
 
 | Nhóm | Kiểm tra | Mức | Đã kiểm | Vi phạm | Kết quả |
@@ -202,6 +252,7 @@ Không có giá trị thiếu.
 | Ràng buộc nghiệp vụ | Ngày đặt nằm trong thời gian hiệu lực khuyến mãi | ERROR | 276,316 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | Danh mục sản phẩm khớp `applicable_category` của khuyến mãi | ERROR | 29,855 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | Giá trị đơn (trước giảm) ≥ `min_order_value` của khuyến mãi | WARNING | 276,316 | 110,717 | ❌ 40.07% |
+| Ràng buộc nghiệp vụ | Tiền giảm khớp loại khuyến mãi: % = thành tiền × %, cố định = mức giảm × số lượng | WARNING | 276,110 | 0 | ✅ PASS |
 | Ràng buộc nghiệp vụ | Đơn giá bán trong khoảng 50%–120% giá niêm yết | WARNING | 714,669 | 10,531 | ❌ 1.47% |
 
 **Phân phối & outlier (IQR)**
@@ -219,6 +270,13 @@ Không có giá trị thiếu.
 **Missing values**
 
 Không có giá trị thiếu.
+
+**Giá trị phân loại** (cột có ≤ 15 giá trị)
+
+| Cột | Số giá trị | Giá trị (số dòng, %) |
+|---|---:|---|
+| `payment_method` | 5 | `credit_card` 356,352 (55.1%), `paypal` 97,018 (15.0%), `cod` 96,681 (14.9%), `apple_pay` 64,763 (10.0%), `bank_transfer` 32,131 (5.0%) |
+| `installments` | 5 | `1` 262,866 (40.6%), `3` 218,949 (33.8%), `6` 109,910 (17.0%), `12` 54,126 (8.4%), `2` 1,094 (0.2%) |
 
 **Kiểm tra**
 
@@ -276,6 +334,13 @@ Không có giá trị thiếu.
 
 Không có giá trị thiếu.
 
+**Giá trị phân loại** (cột có ≤ 15 giá trị)
+
+| Cột | Số giá trị | Giá trị (số dòng, %) |
+|---|---:|---|
+| `return_reason` | 5 | `wrong_size` 13,967 (35.0%), `defective` 8,020 (20.1%), `not_as_described` 7,035 (17.6%), `changed_mind` 6,931 (17.4%), `late_delivery` 3,986 (10.0%) |
+| `return_quantity` | 8 | `1` 13,581 (34.0%), `2` 8,633 (21.6%), `3` 6,050 (15.1%), `4` 4,464 (11.2%), `5` 3,127 (7.8%), `6` 2,126 (5.3%), `7` 1,322 (3.3%), `8` 636 (1.6%) |
+
 **Kiểm tra**
 
 | Nhóm | Kiểm tra | Mức | Đã kiểm | Vi phạm | Kết quả |
@@ -310,6 +375,12 @@ Không có giá trị thiếu.
 **Missing values**
 
 Không có giá trị thiếu.
+
+**Giá trị phân loại** (cột có ≤ 15 giá trị)
+
+| Cột | Số giá trị | Giá trị (số dòng, %) |
+|---|---:|---|
+| `rating` | 5 | `5` 45,256 (39.9%), `4` 36,412 (32.1%), `3` 17,016 (15.0%), `2` 9,095 (8.0%), `1` 5,772 (5.1%) |
 
 **Kiểm tra**
 
@@ -363,6 +434,18 @@ Không có giá trị thiếu.
 
 Không có giá trị thiếu.
 
+**Giá trị phân loại** (cột có ≤ 15 giá trị)
+
+| Cột | Số giá trị | Giá trị (số dòng, %) |
+|---|---:|---|
+| `stockout_flag` | 2 | `1` 40,571 (67.3%), `0` 19,676 (32.7%) |
+| `overstock_flag` | 2 | `1` 45,942 (76.3%), `0` 14,305 (23.7%) |
+| `reorder_flag` | 1 | `0` 60,247 (100%) |
+| `category` | 4 | `Streetwear` 31,020 (51.5%), `Outdoor` 21,050 (34.9%), `GenZ` 4,674 (7.8%), `Casual` 3,503 (5.8%) |
+| `segment` | 8 | `Activewear` 18,290 (30.4%), `Everyday` 13,598 (22.6%), `Performance` 7,673 (12.7%), `Balanced` 6,622 (11.0%), `Trendy` 4,674 (7.8%), `Premium` 3,182 (5.3%), `Standard` 3,127 (5.2%), `All-weather` 3,081 (5.1%) |
+| `year` | 11 | `2018` 6,106 (10.1%), `2017` 6,084 (10.1%), `2016` 5,927 (9.8%), `2015` 5,872 (9.7%), `2019` 5,835 (9.7%), `2014` 5,787 (9.6%), `2020` 5,686 (9.4%), `2021` 5,609 (9.3%), `2013` 5,570 (9.2%), `2022` 5,232 (8.7%), `2012` 2,539 (4.2%) |
+| `month` | 12 | `8` 5,541 (9.2%), `7` 5,238 (8.7%), `9` 5,201 (8.6%), `4` 5,181 (8.6%), `12` 5,146 (8.5%), `10` 5,130 (8.5%), `5` 5,117 (8.5%), `6` 5,052 (8.4%), `3` 4,924 (8.2%), `11` 4,814 (8.0%), `2` 4,567 (7.6%), `1` 4,336 (7.2%) |
+
 **Kiểm tra**
 
 | Nhóm | Kiểm tra | Mức | Đã kiểm | Vi phạm | Kết quả |
@@ -400,6 +483,12 @@ Không có giá trị thiếu.
 
 Không có giá trị thiếu.
 
+**Giá trị phân loại** (cột có ≤ 15 giá trị)
+
+| Cột | Số giá trị | Giá trị (số dòng, %) |
+|---|---:|---|
+| `traffic_source` | 6 | `organic_search` 1,090 (29.8%), `paid_search` 784 (21.5%), `social_media` 632 (17.3%), `email_campaign` 505 (13.8%), `referral` 375 (10.3%), `direct` 266 (7.3%) |
+
 **Kiểm tra**
 
 | Nhóm | Kiểm tra | Mức | Đã kiểm | Vi phạm | Kết quả |
@@ -430,3 +519,4 @@ Không có giá trị thiếu.
 - Outlier ở bảng tổng hợp ngày (`sales`, `web_traffic`) thường là ngày khuyến mãi/lễ — giữ lại và tạo biến cờ sự kiện.
 - Giá trị vi phạm ràng buộc (âm, ngoài miền, sai thứ tự ngày) là **lỗi**, xử lý theo cột *Đề xuất xử lý* ở mục 2.
 - Thời gian giao (`delivery_date − ship_date`): 2–7 ngày, trung vị 4 ngày.
+- Khuyến mãi cố định giảm `discount_value` × số lượng cho mỗi dòng hàng, tức chỉ 0.41–6.39% thành tiền (trung vị 1.39%), nhỏ hơn nhiều so với khuyến mãi % (10–20%). Khi so sánh hiệu quả khuyến mãi, tách riêng hai loại.

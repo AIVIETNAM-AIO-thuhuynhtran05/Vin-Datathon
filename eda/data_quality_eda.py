@@ -43,6 +43,7 @@ REPORT_PATH = ROOT / "reports" / "markdown" / "data_quality_and_eda.md"
 DATA_START = pd.Timestamp("2012-01-01")
 DATA_END = pd.Timestamp("2022-12-31")
 MONEY_TOLERANCE = 1.0
+CATEGORY_MAX_VALUES = 15  # cột có ≤ ngần này giá trị được liệt kê đầy đủ trong báo cáo
 
 ERROR, WARNING, INFO = "ERROR", "WARNING", "INFO"
 SEVERITY_ORDER = {ERROR: 0, WARNING: 1, INFO: 2}
@@ -517,6 +518,30 @@ def profile_outliers(name: str, frame: pd.DataFrame) -> list[dict[str, object]]:
     return rows
 
 
+def profile_categories(name: str, frame: pd.DataFrame) -> list[dict[str, object]]:
+    """Cột ít giá trị (≤ CATEGORY_MAX_VALUES): liệt kê từng giá trị và tần suất để biết dữ liệu có những loại nào."""
+    dates = set(TABLES[name].get("dates", []))
+    rows = []
+    for column in frame.columns:
+        if column in dates or is_identifier(column):
+            continue
+        counts = frame[column].value_counts(dropna=False)
+        if counts.index.dropna().size > CATEGORY_MAX_VALUES:
+            continue
+        for value, count in counts.items():
+            rows.append(
+                {
+                    "table": name,
+                    "column": column,
+                    "distinct_values": int(frame[column].nunique()),
+                    "value": "(trống)" if pd.isna(value) else value,
+                    "count": int(count),
+                    "pct": count / len(frame) * 100 if len(frame) else 0.0,
+                }
+            )
+    return rows
+
+
 # ------------------------------------------------------------- business rules
 
 
@@ -675,7 +700,8 @@ def rules_order_items(d: SimpleNamespace, log: QualityLog, extras: dict[str, obj
         action="Giảm giá không rõ nguồn: gán promo 'UNKNOWN'; có mã nhưng không giảm: kiểm tra điều kiện áp dụng.",
     )
     merged = items.merge(order_info[["order_id", "order_date"]], on="order_id", how="left").merge(
-        promotions[["promo_id", "start_date", "end_date", "applicable_category", "min_order_value"]],
+        promotions[["promo_id", "start_date", "end_date", "applicable_category", "min_order_value",
+                    "promo_type", "discount_value"]],
         on="promo_id", how="left",
     ).merge(products[["product_id", "category", "price"]], on="product_id", how="left").merge(
         order_totals[["order_id", "items_gross"]], on="order_id", how="left"
@@ -698,6 +724,28 @@ def rules_order_items(d: SimpleNamespace, log: QualityLog, extras: dict[str, obj
         with_promo & merged["items_gross"].lt(merged["min_order_value"]), merged,
         columns=["order_id", "product_id", "promo_id", "items_gross", "min_order_value"], severity=WARNING,
         checked=int(with_promo.sum()), action="Gắn cờ khuyến mãi áp không đủ điều kiện.",
+    )
+    # Mức giảm theo loại khuyến mãi: % → thành tiền × giá trị / 100; cố định → giá trị × số lượng.
+    # Bỏ qua dòng có promo_id_2 vì tiền giảm khi đó là tổng của hai chương trình.
+    single_promo = with_promo & merged["promo_id_2"].isna()
+    expected_discount = merged["gross_amount"] * merged["discount_value"] / 100
+    expected_discount = expected_discount.where(
+        merged["promo_type"].eq("percentage"), merged["discount_value"] * merged["quantity"]
+    )
+    discount_gap = (merged["discount_amount"] - expected_discount).abs()
+    log.add(
+        "order_items", "business_rule", "discount_matches_promo_type",
+        "Tiền giảm khớp loại khuyến mãi: % = thành tiền × %, cố định = mức giảm × số lượng",
+        single_promo & discount_gap.gt(expected_discount * 0.01 + MONEY_TOLERANCE),
+        merged.assign(expected_discount=expected_discount),
+        columns=["order_id", "product_id", "promo_id", "promo_type", "discount_value", "quantity",
+                 "gross_amount", "discount_amount", "expected_discount"],
+        severity=WARNING, checked=int(single_promo.sum()),
+        action="Tiền giảm không khớp công thức của chương trình: gắn cờ, tính lại theo loại khuyến mãi.",
+    )
+    fixed_lines = single_promo & merged["promo_type"].eq("fixed")
+    extras["fixed_discount_share"] = (
+        (merged.loc[fixed_lines, "discount_amount"] / merged.loc[fixed_lines, "gross_amount"] * 100).describe().to_dict()
     )
     price_ratio = merged["unit_price"] / merged["price"]
     log.add(
@@ -1007,6 +1055,7 @@ def write_report(
     overview: pd.DataFrame,
     missing: pd.DataFrame,
     outliers: pd.DataFrame,
+    categories: pd.DataFrame,
     checks: pd.DataFrame,
     extras: dict[str, object],
 ) -> None:
@@ -1102,6 +1151,23 @@ def write_report(
                     f"{row['missing_type']} | {cell(row['treatment'])} |"
                 )
 
+        table_categories = categories[categories["table"] == name] if not categories.empty else categories
+        if not table_categories.empty:
+            lines += [
+                "",
+                f"**Giá trị phân loại** (cột có ≤ {CATEGORY_MAX_VALUES} giá trị)",
+                "",
+                "| Cột | Số giá trị | Giá trị (số dòng, %) |",
+                "|---|---:|---|",
+            ]
+            for column, group in table_categories.groupby("column", sort=False):
+                values = ", ".join(
+                    f"`{cell(fmt(row['value']) if isinstance(row['value'], float) else row['value'])}` "
+                    f"{row['count']:,} ({fmt(row['pct'], 1)}%)"
+                    for _, row in group.iterrows()
+                )
+                lines.append(f"| `{column}` | {int(group['distinct_values'].iloc[0])} | {values} |")
+
         table_checks = checks[checks["table"] == name]
         lines += [
             "",
@@ -1167,6 +1233,14 @@ def write_report(
             f"trung vị {fmt(ship['50%'])} ngày."
         )
 
+    if "fixed_discount_share" in extras:
+        share = extras["fixed_discount_share"]
+        lines.append(
+            f"- Khuyến mãi cố định giảm `discount_value` × số lượng cho mỗi dòng hàng, tức chỉ "
+            f"{fmt(share['min'])}–{fmt(share['max'])}% thành tiền (trung vị {fmt(share['50%'])}%), "
+            "nhỏ hơn nhiều so với khuyến mãi % (10–20%). Khi so sánh hiệu quả khuyến mãi, tách riêng hai loại."
+        )
+
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -1184,18 +1258,21 @@ def main() -> None:
     tables = load_tables(log)
     missing_rows: list[dict[str, object]] = []
     outlier_rows: list[dict[str, object]] = []
+    category_rows: list[dict[str, object]] = []
     for name, frame in tables.items():
         print(f"Kiểm tra {name}: {len(frame):,} dòng × {len(frame.columns)} cột")
         missing_rows += check_missing(name, frame, log)
         check_duplicates(name, frame, log)
         check_values(name, frame, log)
         outlier_rows += profile_outliers(name, frame)
+        category_rows += profile_categories(name, frame)
     check_foreign_keys(tables, log)
     extras = business_rules(tables, log) if set(TABLES) <= set(tables) else {}
 
     checks = pd.DataFrame(log.checks)
     missing = pd.DataFrame(missing_rows)
     outliers = pd.DataFrame(outlier_rows)
+    categories = pd.DataFrame(category_rows)
     issues = checks[checks["status"].eq("ISSUE")]
     notes = checks[checks["status"].eq("NOTE")]
     overview = pd.DataFrame(
@@ -1220,7 +1297,8 @@ def main() -> None:
     missing.to_csv(OUTPUT_DIR / "missing_values.csv", index=False)
     outliers.to_csv(OUTPUT_DIR / "outliers.csv", index=False)
     overview.to_csv(OUTPUT_DIR / "table_overview.csv", index=False)
-    write_report(overview, missing, outliers, checks, extras)
+    categories.to_csv(OUTPUT_DIR / "categorical_values.csv", index=False)
+    write_report(overview, missing, outliers, categories, checks, extras)
 
     print(
         f"\n{len(checks)} kiểm tra, {len(issues)} có vi phạm "
