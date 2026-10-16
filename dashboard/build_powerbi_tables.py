@@ -196,6 +196,8 @@ def main() -> None:
     for name in TABLES:
         path = OUTPUT_DIR / f"{name}.csv"
         con.execute(f"COPY out_{name} TO '{path.as_posix()}' (HEADER, DELIMITER ',')")
+        # Thêm BOM UTF-8 để Excel đọc đúng tiếng Việt (Power BI đọc được cả hai).
+        path.write_bytes(b"\xef\xbb\xbf" + path.read_bytes())
         rows, columns = con.execute(f"SELECT COUNT(*), (SELECT COUNT(*) FROM (DESCRIBE out_{name})) "
                                     f"FROM out_{name}").fetchone()
         print(f"{name + '.csv':<18} {rows:>9,} dòng × {columns:>2} cột")
