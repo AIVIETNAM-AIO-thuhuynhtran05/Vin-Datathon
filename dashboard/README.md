@@ -36,7 +36,7 @@ python dashboard/build_powerbi_tables.py
 1. **Load** the 13 raw CSV files from `data/raw/` into DuckDB and keep them read-only.
 2. **Merge tables that share a grain:** order lines with their order, product cost, and promotion type (`sales_lines`); orders with their payment and shipment (`orders`); returns with the customer and delivery zip of their order (`returns`). Customers get their region and their segment from the segmentation part.
 3. **Filter out orders that bring in no revenue:** 7,275 `created` and 59,462 `cancelled` orders (66,737 in total, 10.3% of all orders). `sales_lines` keeps only `paid`, `shipped`, `delivered`, and `returned` orders, the same rule as the segmentation part; `orders` keeps every status so the cancel rate can still be measured.
-4. **Apply the cleaning rules from the EDA step:** cap refunds at the amount paid (scaled per order, so net revenue is never negative), keep orders without a shipment record out of delivery-time KPIs, drop the constant `reorder_flag`, and leave `sales.csv` out (its revenue is before discounts and includes cancelled orders; it is used only for forecasting).
+4. **Apply the cleaning rules from the EDA step:** cap refunds at the amount paid (scaled per order, so net revenue is never negative), keep orders without a shipment record out of delivery-time KPIs, drop the constant `reorder_flag`, and leave `sales.csv` out (its revenue is before discounts and includes cancelled orders; it is used only for forecasting). Web traffic is used by day only (sessions, visitors, page views, session duration): `traffic_source` holds one source per day, so it cannot split traffic by channel, and `bounce_rate` (0.3–0.6%) is implausibly low, so neither feeds a KPI.
 5. **Check before export** (the script stops if any check fails): primary keys are unique, every foreign key exists in its lookup table, row counts match the source, and order-line revenue matches `payments` for the same orders.
 6. **Model in Power BI:** a DAX date table marked as the date table; one-to-many, single-direction relationships from lookup tables to data tables (ship and delivery dates as inactive relationships, used with `USERELATIONSHIP`); every DAX measure in one `_Measures` table.
 
@@ -135,7 +135,7 @@ The project focuses on answering the following questions:
 - The business peaked on its main KPIs around **2016**; revenue, orders, and customer count then declined steadily through **2022**.
 - **Revenue CAGR is about -3.8% per year**, showing the business is contracting rather than growing.
 - Profit margin fell from about **22% to 14%**, reflecting weakening business efficiency.
-- Traffic keeps growing, but the **conversion rate is only about 0.13%**, so the problem is not just attracting traffic but converting visitors into customers.
+- Sessions grew **63%** from 2013 to 2022, but the **conversion rate (revenue orders ÷ sessions) fell from 1.01% to 0.29%**, so the problem is not just attracting traffic but converting visitors into customers.
 
 ### 💡 Business Implications
 
@@ -341,7 +341,7 @@ Priorities are ranked by **impact on revenue/profit** and **speed of implementat
 
 ### 1️⃣ Improve Customer Conversion & Retention
 
-**Why priority #1:** **Registrations are rising while purchases are falling**, meaning the business still attracts new users but fails to turn them into buyers. Traffic is growing, yet conversion is only **~0.13%**, **28%** of registered customers never completed an order, and retention drops sharply from **Month +1**. The business is losing customers at both ends of the funnel: it cannot convert new users or keep existing buyers.
+**Why priority #1:** **Registrations are rising while purchases are falling**, meaning the business still attracts new users but fails to turn them into buyers. Sessions grew 63% from 2013 to 2022, yet conversion fell from **1.01% to 0.29%**, **28%** of registered customers never completed an order, and retention drops sharply from **Month +1**. The business is losing customers at both ends of the funnel: it cannot convert new users or keep existing buyers.
 
 | # | Action | Implementation Details | Owner | Timeline |
 |---|---|---|---|---|
@@ -359,7 +359,7 @@ Priorities are ranked by **impact on revenue/profit** and **speed of implementat
 | First purchase within 30 days of sign-up | Measure from dashboard | Steady increase across monthly cohorts |
 | Purchase growth vs. registration growth | Registrations up, purchases down | Purchases grow in line with registrations |
 | Never Purchased + Lost | ~48% | **≤ 40%** after 12 months |
-| Conversion Rate | ~0.13% | **≥ 0.18%** after 6 months |
+| Conversion Rate (revenue orders ÷ sessions) | 0.29% (2022) | Steady month-over-month increase |
 | Month +1 Retention | Measure from dashboard | **+5 percentage points** vs. baseline |
 | Repeat Purchase Rate / CLV | Measure from dashboard | Quarter-over-quarter growth |
 

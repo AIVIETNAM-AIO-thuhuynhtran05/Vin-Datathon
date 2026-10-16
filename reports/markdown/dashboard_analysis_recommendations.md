@@ -7,7 +7,7 @@ Dashboard Power BI hiện tại: [Ecommerce_Dashboard.pbix](../Phần%202/Ecomme
 ## 1. Executive Overview (Tổng quan)
 
 * **Thực trạng**: Doanh nghiệp đạt đỉnh năm 2016 nhưng suy giảm liên tục đến năm 2022 ở các chỉ số KPI chính (doanh thu, đơn hàng, khách hàng).
-* **Vấn đề**: Tỷ lệ chuyển đổi cực thấp (**0.13%**) dù lưu lượng truy cập tăng. Chiến lược khách hàng chưa bền vững khi phụ thuộc vào kênh thu hút mới (organic, paid), thiếu các kênh giữ chân (email, referral).
+* **Vấn đề**: Lưu lượng truy cập tăng 63% (2013–2022) nhưng tỷ lệ chuyển đổi (đơn có doanh thu ÷ sessions) giảm từ **1,01% xuống 0,29%**. Chiến lược khách hàng chưa bền vững khi phụ thuộc vào kênh thu hút mới (organic, paid), thiếu các kênh giữ chân (email, referral).
 
 <img width="1488" height="766" alt="Overview dashboard" src="https://github.com/user-attachments/assets/1814c8ac-752b-4912-a6d2-f212edd2646e" />
 
