@@ -29,6 +29,7 @@ Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại 
 │   └── README.md                        # Flow: yêu cầu đề → dữ liệu → FE → validation → mô hình → submission
 ├── dashboard/
 │   ├── README.md                        # Cấu trúc 5 trang, mô hình dữ liệu, KPI & phân tích
+│   ├── build_powerbi_tables.py          # Gộp CSV gốc thành 10 bảng import vào Power BI (DuckDB)
 │   └── Ecommerce_Dashboard.pbix         # Chỉ lưu local, không đưa lên Git
 ├── reports/                             # Báo cáo PDF — mỗi phần một file
 │   ├── 01_EDA_report.pdf                # EDA & chất lượng dữ liệu
@@ -137,7 +138,7 @@ Mỗi kiểm tra có mức ERROR/WARNING/INFO kèm đề xuất xử lý. Script
 
 ## 2. Dashboard
 
-> 🔄 **Đang dựng lại:** bản v1 dùng 5 bảng phẳng, chỉ có 2 quan hệ, chưa có bảng ngày dùng chung và chưa áp dụng data cleaning từ bước EDA. Bản mới dựng lại trên star schema theo cấu trúc 5 trang bên dưới.
+> 🔄 **Đang dựng lại:** bản v1 dùng 5 bảng phẳng, chỉ có 2 quan hệ, chưa có bảng ngày dùng chung và chưa áp dụng data cleaning từ bước EDA. Bản mới gộp lại dữ liệu cho sạch, làm data modeling trong Power BI và theo cấu trúc 5 trang bên dưới.
 
 Dashboard đi từ tổng quan đến chi tiết, xoay quanh một cây KPI:
 
@@ -154,20 +155,31 @@ Trang Overview trả lời doanh thu giảm là do yếu tố nào: traffic, CR 
 | Inventory | Tồn kho có cân với nhu cầu không? | DOS đã sửa công thức, stockout/overstock, hàng chậm bán (DOS > 365 ngày) |
 | Logistics & Returns | Hàng có đến nơi, có bị trả lại không? | Thời gian giao theo vùng, lý do trả hàng, Wrong Size theo sản phẩm |
 
-**Biến đổi dữ liệu:** dùng SQL (DuckDB, chạy từ Python) đọc `data/raw/`, ghi ra `data/processed/powerbi/`; Power BI chỉ import.
+**Biến đổi dữ liệu** — [`dashboard/build_powerbi_tables.py`](dashboard/build_powerbi_tables.py): Python chạy SQL trên DuckDB, đọc `data/raw/`, gộp bảng và ghi ra `data/processed/powerbi/`. Power BI chỉ import rồi làm data modeling.
 
 1. Nạp 13 file CSV gốc vào DuckDB, chỉ đọc.
-2. Dựng các bảng dimension, trong đó `dim_date` gồm mọi ngày từ 04/07/2012 đến 31/12/2022.
-3. Dựng từng bảng fact theo một grain rõ ràng. Doanh thu dòng hàng = số lượng × đơn giá − giảm giá.
-4. Lọc các đơn không tạo ra doanh thu: 7.275 đơn `created` và 59.462 đơn `cancelled` (tổng 66.737 đơn, 10,3%). Bảng dòng hàng chỉ giữ đơn `paid`/`shipped`/`delivered`/`returned`; bảng đơn hàng vẫn giữ mọi trạng thái để tính tỷ lệ hủy.
-5. Áp dụng quy tắc cleaning từ bước EDA: giới hạn tiền hoàn bằng tiền đã trả, loại đơn thiếu bản ghi vận chuyển khỏi KPI thời gian giao, không dùng `sales.csv` trong model.
-6. Kiểm tra trước khi xuất: khóa chính không trùng, khóa ngoại đều có trong dimension, số dòng khớp nguồn, doanh thu dòng hàng khớp `payments`.
-7. Nạp vào Power BI: quan hệ 1-nhiều một chiều, đánh dấu `dim_date` là bảng ngày, ngày gửi/giao là quan hệ inactive, mọi measure DAX nằm trong bảng `_Measures`.
+2. Gộp các bảng cùng grain: dòng hàng + đơn + giá vốn sản phẩm + loại khuyến mãi (`sales_lines`); đơn + thanh toán + vận chuyển (`orders`); lần trả + khách và zip của đơn (`returns`). Bảng khách hàng thêm vùng và phân khúc từ phần 3.
+3. Lọc các đơn không tạo ra doanh thu: 7.275 đơn `created` và 59.462 đơn `cancelled` (tổng 66.737 đơn, 10,3%). `sales_lines` chỉ giữ đơn `paid`/`shipped`/`delivered`/`returned`; `orders` vẫn giữ mọi trạng thái để tính tỷ lệ hủy.
+4. Áp dụng quy tắc cleaning từ bước EDA: giới hạn tiền hoàn bằng tiền đã trả, loại đơn thiếu bản ghi vận chuyển khỏi KPI thời gian giao, bỏ cột hằng số `reorder_flag`, không dùng `sales.csv`.
+5. Kiểm tra trước khi xuất (script dừng nếu không đạt): khóa chính không trùng, khóa ngoại đều có trong bảng tra cứu, số dòng khớp nguồn, doanh thu dòng hàng khớp `payments` của cùng các đơn.
+6. Data modeling trong Power BI: bảng ngày tạo bằng DAX và đánh dấu Date Table; quan hệ 1-nhiều một chiều từ bảng tra cứu sang bảng dữ liệu (ngày gửi/giao là quan hệ inactive); mọi measure DAX nằm trong bảng `_Measures`.
 
-**Mô hình dữ liệu (star schema):**
+**Đầu ra (10 file CSV):**
 
-- **Fact:** `fact_order_items` (dòng hàng), `fact_orders` (đơn, gộp `payments` và `shipments` vì cả hai 1 dòng/đơn), `fact_returns` (lần trả), `fact_inventory` (sản phẩm-tháng), `fact_web_traffic` (ngày).
-- **Dimension:** `dim_date` (dùng chung cho mọi fact), `dim_customer`, `dim_product`, `dim_geography`, `dim_promotion`.
+| Loại | File | 1 dòng = | Số dòng |
+|---|---|---|---:|
+| Dữ liệu | `sales_lines.csv` | 1 dòng hàng của đơn có doanh thu | 641.002 |
+| Dữ liệu | `orders.csv` | 1 đơn (mọi trạng thái) | 646.945 |
+| Dữ liệu | `returns.csv` | 1 lần trả 1 sản phẩm | 39.939 |
+| Dữ liệu | `reviews.csv` | 1 đánh giá | 113.551 |
+| Dữ liệu | `inventory.csv` | 1 sản phẩm / 1 tháng | 60.247 |
+| Dữ liệu | `web_traffic.csv` | 1 ngày | 3.652 |
+| Tra cứu | `customers.csv` | 1 khách (kèm vùng, phân khúc) | 121.930 |
+| Tra cứu | `products.csv` | 1 SKU | 2.412 |
+| Tra cứu | `promotions.csv` | 1 chương trình | 50 |
+| Tra cứu | `geography.csv` | 1 mã bưu chính | 39.948 |
+
+Các bảng dữ liệu **không nối trực tiếp với nhau**; mọi so sánh giữa chúng đi qua bảng ngày và bảng tra cứu dùng chung.
 
 Định nghĩa từng KPI, công thức và trang chứa KPI: [`dashboard/README.md`](dashboard/README.md).
 

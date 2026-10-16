@@ -6,7 +6,7 @@ An analysis of a **fashion e-commerce platform** over **2012–2022**, focused o
 
 ## 📌 Dashboard Structure
 
-> 🔄 **Being rebuilt.** Version 1 used 5 flat tables with only 2 relationships, no shared date table, and no data cleaning from the EDA step. The new version is rebuilt on a star schema with the 5-page structure below.
+> 🔄 **Being rebuilt.** Version 1 used 5 flat tables with only 2 relationships, no shared date table, and no data cleaning from the EDA step. The new version merges the raw data into clean tables, models them in Power BI, and follows the 5-page structure below.
 
 The dashboard goes from overview to detail and is built around one KPI tree:
 
@@ -25,33 +25,37 @@ The Overview page shows which factor moved revenue (traffic, conversion, or AOV)
 
 ## 🧱 Data Processing & Data Model
 
-The KPIs set what the model needs. The raw CSV files are transformed with **SQL (DuckDB, run from Python)** into a star schema: fact tables hold the events, dimension tables hold who, what, where, and when. Output goes to `data/processed/powerbi/`, and Power BI only imports it.
+The KPIs set what the model needs. [`build_powerbi_tables.py`](build_powerbi_tables.py) runs SQL on **DuckDB from Python** to clean the raw CSV files and merge them into 10 tables, each at one grain so nothing is counted twice. Output goes to `data/processed/powerbi/`; Power BI imports it and handles the data model.
+
+```bash
+python dashboard/build_powerbi_tables.py
+```
 
 ### Transformation steps
 
 1. **Load** the 13 raw CSV files from `data/raw/` into DuckDB and keep them read-only.
-2. **Build the dimensions:** `dim_date` for every day from 04/07/2012 to 31/12/2022, plus `dim_customer`, `dim_product` (one row per SKU), `dim_geography` (by zip), and `dim_promotion`.
-3. **Build each fact table at one declared grain** (see the table below). Order-line revenue = quantity × unit price − discount; cost = quantity × COGS.
-4. **Filter out orders that bring in no revenue:** 7,275 `created` and 59,462 `cancelled` orders (66,737 in total, 10.3% of all orders). `fact_order_items` keeps only `paid`, `shipped`, `delivered`, and `returned` orders, the same rule as the segmentation part; `fact_orders` keeps every status so the cancel rate can still be measured.
-5. **Apply the cleaning rules from the EDA step:**
-   - Cap refunds at the amount paid, so net revenue is never negative.
-   - Keep orders without a shipment record out of delivery-time KPIs.
-   - Leave `sales.csv` out of the model: its revenue is before discounts and includes cancelled orders. It is used only for forecasting.
-6. **Check before export:** primary keys are unique, every foreign key exists in its dimension, row counts match the source, and order-line revenue reconciles with `payments`.
-7. **Load into Power BI:** one-to-many, single-direction relationships from each dimension; `dim_date` marked as the date table; ship and delivery dates as inactive relationships (used with `USERELATIONSHIP`); every DAX measure in one `_Measures` table.
+2. **Merge tables that share a grain:** order lines with their order, product cost, and promotion type (`sales_lines`); orders with their payment and shipment (`orders`); returns with the customer and delivery zip of their order (`returns`). Customers get their region and their segment from the segmentation part.
+3. **Filter out orders that bring in no revenue:** 7,275 `created` and 59,462 `cancelled` orders (66,737 in total, 10.3% of all orders). `sales_lines` keeps only `paid`, `shipped`, `delivered`, and `returned` orders, the same rule as the segmentation part; `orders` keeps every status so the cancel rate can still be measured.
+4. **Apply the cleaning rules from the EDA step:** cap refunds at the amount paid (scaled per order, so net revenue is never negative), keep orders without a shipment record out of delivery-time KPIs, drop the constant `reorder_flag`, and leave `sales.csv` out (its revenue is before discounts and includes cancelled orders; it is used only for forecasting).
+5. **Check before export** (the script stops if any check fails): primary keys are unique, every foreign key exists in its lookup table, row counts match the source, and order-line revenue matches `payments` for the same orders.
+6. **Model in Power BI:** a DAX date table marked as the date table; one-to-many, single-direction relationships from lookup tables to data tables (ship and delivery dates as inactive relationships, used with `USERELATIONSHIP`); every DAX measure in one `_Measures` table.
 
-### Star schema
+### Output tables
 
-| Fact table | 1 row = | Built from | Linked dimensions |
-|---|---|---|---|
-| `fact_order_items` | 1 product in 1 order | `order_items` + `orders` + `products` | date, customer, product, promotion |
-| `fact_orders` | 1 order | `orders` + `payments` + `shipments` (both 1:1 with orders) | date, customer, geography (delivery zip) |
-| `fact_returns` | 1 returned product | `returns` | date, product |
-| `fact_inventory` | 1 product per month | `inventory` | date, product |
-| `fact_web_traffic` | 1 day | `web_traffic` | date |
+| Type | File | 1 row = | Rows | Relationships in Power BI |
+|---|---|---|---:|---|
+| Data | `sales_lines.csv` | 1 order line of a revenue order | 641,002 | Date (order date), customers, products, promotions, geography |
+| Data | `orders.csv` | 1 order, every status | 646,945 | Date (order date; ship and delivery dates inactive), customers, geography |
+| Data | `returns.csv` | 1 returned product | 39,939 | Date (return date), customers, products, geography |
+| Data | `reviews.csv` | 1 review | 113,551 | Date (review date), customers, products |
+| Data | `inventory.csv` | 1 product per month | 60,247 | Date (snapshot date), products |
+| Data | `web_traffic.csv` | 1 day | 3,652 | Date |
+| Lookup | `customers.csv` | 1 customer, with region and segment | 121,930 | |
+| Lookup | `products.csv` | 1 SKU | 2,412 | |
+| Lookup | `promotions.csv` | 1 promotion | 50 | |
+| Lookup | `geography.csv` | 1 zip code | 39,948 | |
 
-- `dim_date` is shared by every fact, so YoY and MoM work everywhere and traffic, sales, and inventory line up on the same calendar.
-- `order_items` has two promotion columns (`promo_id`, `promo_id_2`): the relationship uses `promo_id`, and `promo_id_2` is an inactive relationship.
+Data tables never link to each other: `returns` is not joined to `orders` in the model. `order_id` stays in each table for drill-down, and cross-table KPIs such as the return rate (orders with a return ÷ delivered orders) work because both tables are filtered by the same date and lookup tables.
 
 ## 📐 KPIs by Page
 
