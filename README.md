@@ -200,20 +200,65 @@ Các bảng dữ liệu **không nối trực tiếp với nhau**; mọi so sán
 
 ## 3. Phân nhóm khách hàng
 
-Hai lớp phân nhóm cho **toàn bộ** 121.930 khách hàng:
+**Câu hỏi:** khách nào mang về doanh thu, khách nào đã rời đi, khách nào chưa từng mua, và nên làm gì với từng nhóm? Chi tiết: [`customer_segmentation/README.md`](customer_segmentation/README.md). Báo cáo: `reports/03_Customer_Segmentation_report.pdf`.
 
-- **Rule-based** cho khách chưa có đơn phát sinh doanh thu:
-  - RB1 — chưa giao dịch (chưa đặt đơn nào).
-  - RB2 — đặt đơn nhưng chưa chuyển đổi (mọi đơn đều bị hủy hoặc bỏ dở).
-- **K-Means trên RFM** (log1p → scale → PCA) cho khách có đơn `paid`/`shipped`/`delivered`/`returned` (business rule: đơn đã thanh toán là có doanh thu).
+**Phương pháp:** hai lớp phân nhóm cho **toàn bộ** 121.930 khách đã đăng ký.
 
-Nhân khẩu học không tham gia phân cụm; chỉ dùng để mô tả chân dung từng nhóm.
+- **Rule-based** cho khách chưa có đơn phát sinh doanh thu: RB1 chưa đặt đơn nào; RB2 đặt đơn nhưng mọi đơn đều bị hủy hoặc bỏ dở.
+- **K-Means trên RFM** (log1p → scale → PCA) cho khách có đơn `paid`/`shipped`/`delivered`/`returned`. Chọn **k = 5**: đạt điều kiện business (cụm nhỏ nhất 10,2%, 5 cụm là 5 loại hành vi khác nhau), ổn định (ARI 0,956), thống kê đồng hạng với k = 3 nhưng tách được khách mới khỏi khách đã rời bỏ.
+- Nhân khẩu học không tham gia phân cụm; chỉ dùng để mô tả chân dung từng nhóm.
 
-Flow chi tiết, định nghĩa biến và quyết định xử lý: [`customer_segmentation/README.md`](customer_segmentation/README.md).
+### Output: mọi khách có đúng một nhãn
+
+```text
+121.930 khách đã đăng ký
+├── Rule-based (34.091 khách, 28,0%): chưa tạo ra doanh thu
+│   ├── RB1 Chưa giao dịch .................. 31.684 (26,0%)
+│   └── RB2 Đặt đơn nhưng chưa chuyển đổi ...  2.407 ( 2,0%)
+└── K-Means k = 5 (87.839 khách đã mua, 72,0%)
+    ├── C0 Champions ........................ 12.384 · 43,6% doanh thu
+    ├── C2 Trung thành ...................... 19.103 · 34,9% doanh thu
+    ├── C4 Ngủ đông ......................... 24.995 · 13,1% doanh thu
+    ├── C3 Khách mới / tiềm năng ............  8.945 ·  5,7% doanh thu
+    └── C1 Đã rời bỏ ........................ 22.412 ·  2,6% doanh thu
+```
+
+| Nhóm | Chân dung (Recency, Frequency là median) |
+|---|---|
+| C0 Champions | Mua gần nhất (~5 tháng), 17 đơn, chi cao nhất. Gần như chỉ mua Streetwear (96%), trả bằng thẻ tín dụng; rất ít đến từ email (lift 0,49) |
+| C2 Trung thành | 9 đơn, chi khá, nhưng gần 2 năm chưa quay lại. Chân dung giống Champions: đang trôi dần thành Ngủ đông |
+| C4 Ngủ đông | 3 đơn, AOV trên mặt bằng, ~4,5 năm chưa mua. Đặt trực tiếp và qua email (lift 1,53 và 1,35) |
+| C3 Khách mới / tiềm năng | Mua gần đây (~7 tháng) nhưng mới 4 đơn. Liên lạc được qua email và kênh trực tiếp |
+| C1 Đã rời bỏ | 1 đơn giá trị thấp, ~6,5 năm trước, tỷ lệ trả hàng cao nhất (7,8%). Mua GenZ và Outdoor nhiều bất thường (lift 2,93 và 2,31) |
+| RB1 Chưa giao dịch | Đăng ký nhưng chưa đặt đơn nào: 1/4 số khách đăng ký |
+| RB2 Đặt đơn nhưng chưa chuyển đổi | Mọi đơn bị hủy hoặc bỏ dở; 152 khách thất bại từ 2 đơn trở lên |
+
+**Insight chính:**
+
+1. **Doanh thu phụ thuộc vào một nhóm nhỏ:** Champions và Trung thành là 35,8% khách đã mua nhưng mang về **78,5% doanh thu**.
+2. **Rủi ro lớn nhất:** nhóm Trung thành (34,9% doanh thu) đã gần 2 năm chưa mua.
+3. **Cơ hội lớn nhất ở đầu phễu:** **28% khách đăng ký** (34.091) chưa từng tạo ra doanh thu.
+4. **Nhắm mục tiêu theo hành vi, không theo nhân khẩu học:** danh mục, thanh toán, thiết bị phân biệt cụm (Cramér's V 0,14–0,25); tuổi, giới tính, kênh thu hút thì không (V < 0,01).
+
+### Recommendation
+
+| Ưu tiên | Nhóm | Hành động | Kênh | KPI theo dõi |
+|---:|---|---|---|---|
+| 1 | C0 Champions | Hạng VIP, quyền mua sớm Streetwear mới, upsell premium; **không** giảm giá sâu | App/mobile, ưu đãi gắn thẻ tín dụng; chủ động thu email | Giữ chân 90 ngày, AOV |
+| 1 | C2 Trung thành | Nhắc mua theo mốc 6/12 tháng, điểm thưởng có hạn dùng, cross-sell | SEO/landing page Streetwear, email | % mua lại trong 12 tháng |
+| 2 | RB1 Chưa giao dịch | Voucher đơn đầu có hạn, giới thiệu sản phẩm bán chạy | Email/push | Tỷ lệ chuyển đổi đơn đầu |
+| 2 | RB2 Chưa chuyển đổi | Tìm lý do hủy (thanh toán, giá, giao hàng), retarget đúng sản phẩm đã đặt | Email/retargeting | Tỷ lệ chuyển đổi đơn đầu |
+| 3 | C3 Khách mới | Voucher đơn kế tiếp trong 30 ngày, email onboarding | Email, kênh trực tiếp | Mua lần tiếp trong 90 ngày |
+| 4 | C4 Ngủ đông | Email theo mùa, ưu đãi nhỏ, chạy thử với nhóm đối chứng trước | Email | Reactivation rate |
+| 5 | C1 Đã rời bỏ | Chỉ email chi phí gần 0; rà soát trải nghiệm sản phẩm GenZ/Outdoor | Email | Chi phí/đơn kéo về |
+
+Mọi hành động đo bằng nhóm đối chứng (giữ 10% khách mỗi nhóm không nhận ưu đãi) để biết doanh thu tăng thêm thật sự.
 
 ## 4. Dự báo doanh thu
 
-Dự báo `Revenue` và `COGS` theo ngày cho 548 ngày (01/01/2023 – 01/07/2024) từ `sales.csv`. Chi tiết từng bước và ý nghĩa: [`forecasting/README.md`](forecasting/README.md). Báo cáo: `reports/04_Forecasting_report.pdf`.
+**Câu hỏi:** doanh thu và giá vốn từng ngày từ 01/01/2023 đến 01/07/2024 sẽ ra sao, để lên kế hoạch tồn kho, khuyến mãi và giao hàng? Chi tiết từng bước và ý nghĩa: [`forecasting/README.md`](forecasting/README.md). Báo cáo: `reports/04_Forecasting_report.pdf`.
+
+**Phương pháp:** 9 bước, từ `sales.csv` (3.833 ngày) đến file nộp 548 dòng.
 
 | Bước | Làm gì | Ý nghĩa |
 |---|---|---|
@@ -227,10 +272,32 @@ Dự báo `Revenue` và `COGS` theo ngày cho 548 ngày (01/01/2023 – 01/07/20
 | 8. SHAP | Mùa vụ năm 58.7%, giai đoạn & xu hướng 25.4%, đầu/cuối tháng 6.3%, khuyến mãi 2.6% | Giải thích dự báo bằng ngôn ngữ kinh doanh |
 | 9. Submission | `forecasting/submission.csv`, 548 dòng | Đúng định dạng, chạy lại ra đúng file (`random_state = 42`) |
 
-**Kết quả:**
+### Output
 
-- Trên năm 2022, ensemble + calibration đạt **MAE 544K VND/ngày, R² 0.807** cho Revenue, giảm **37%** sai số so với seasonal naive (MAE 864K, R² 0.445).
-- Dự báo Revenue **2023: 1.18 tỷ** (2022: 1.17 tỷ), **6 tháng đầu 2024: 0.71 tỷ** (cùng kỳ 2022: 0.69 tỷ): doanh thu đi ngang, chưa hồi phục.
-- Tháng 4–6 chiếm 37.9% doanh thu dự báo 2023; Q3 2023 dự báo bán lỗ (COGS/Revenue 1.05), trùng thời điểm chiến dịch giảm 50% chỉ chạy năm lẻ.
-- Chưa có `sample_submission.csv` để đối chiếu thứ tự dòng; file nộp đang xếp theo thứ tự ngày.
+| | Thực tế 2022 | Dự báo 2023 | Thực tế 6 tháng đầu 2022 | Dự báo 6 tháng đầu 2024 |
+|---|---:|---:|---:|---:|
+| Revenue | 1,17 tỷ | 1,18 tỷ | 0,69 tỷ | 0,71 tỷ |
+| COGS | 1,02 tỷ | 1,08 tỷ | 0,59 tỷ | 0,61 tỷ |
 
+- **File nộp:** `forecasting/submission.csv`, 548 dòng `Date,Revenue,COGS`.
+- **Độ chính xác:** trên năm 2022, ensemble + calibration đạt **MAE 544K VND/ngày, R² 0,807** cho Revenue, giảm **37%** sai số so với seasonal naive (MAE 864K, R² 0,445). Sai số tương đương 17% doanh thu trung bình ngày năm 2022: tin cậy cho kế hoạch theo tháng/quý, theo ngày chỉ nên coi là định hướng.
+
+**Insight chính:**
+
+1. **Doanh thu đi ngang, chưa hồi phục:** 2023 +1,2% so với 2022, 6 tháng đầu 2024 +2,9% so với cùng kỳ 2022; không quay lại mức 2014–2018.
+2. **Tháng 4–6 chiếm 37,9% doanh thu 2023.**
+3. **Q3 2023 dự báo bán lỗ:** COGS/Revenue 1,05 (Q3 2022: 0,89), trùng thời điểm chiến dịch Urban Blowout giảm 50% chỉ chạy năm lẻ.
+4. **Cuối tháng là cao điểm ngắn hạn:** 3 ngày cuối tháng dự báo 5,55 triệu/ngày, gần gấp đôi giữa tháng (2,92 triệu).
+5. **Khuyến mãi không phải động lực tăng trưởng:** chỉ giải thích 2,6% dự báo (SHAP), so với 58,7% của mùa vụ năm.
+
+### Recommendation
+
+| Ưu tiên | Hành động | Dựa trên | KPI theo dõi |
+|---:|---|---|---|
+| 1 | Chuẩn bị tồn kho, nhân sự, năng lực giao hàng cho tháng 4–6 từ tháng 3 | Tháng 4–6 chiếm 37,9% doanh thu 2023 | Tỷ lệ hết hàng, thời gian giao hàng mùa cao điểm |
+| 1 | Xem lại mức giảm 50% của Urban Blowout trước tháng 7/2023 | Q3 2023 dự báo COGS vượt Revenue | Gross margin Q3 |
+| 2 | Đặt chiến dịch và lịch nhập hàng theo mốc cuối tháng | Cuối tháng doanh thu gần gấp đôi giữa tháng | Doanh thu 3 ngày cuối tháng, tồn kho đầu tháng |
+| 2 | Không dựa vào khuyến mãi để tăng doanh thu; tập trung chuyển đổi và giữ chân (mục 3) | Khuyến mãi chỉ 2,6% SHAP; doanh thu đi ngang | Conversion rate, tỷ lệ mua lại |
+| 3 | So dự báo với thực tế mỗi tháng, cập nhật hệ số calibration khi lệch kéo dài | Calibration giả định mức lệch giống năm 2022 | Sai số tháng (MAE, % lệch tổng) |
+
+**Còn lại trước khi nộp:** chưa có `sample_submission.csv` để đối chiếu thứ tự dòng; file nộp đang xếp theo thứ tự ngày.
