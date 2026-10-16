@@ -7,6 +7,26 @@ Phân tích hoạt động kinh doanh của một doanh nghiệp thương mại 
 - **Phân nhóm khách hàng** (rule-based + K-Means)
 - **Dự báo doanh thu** theo ngày cho giai đoạn 01/01/2023–01/07/2024 (ensemble Ridge + LightGBM, R² 0.807 trên năm 2022)
 
+## Bài toán kinh doanh
+
+Doanh nghiệp tăng trưởng đến khoảng năm 2016 rồi suy giảm suốt sáu năm, dù lượng truy cập website vẫn tăng. Ban lãnh đạo cần biết vì sao, nên tập trung vào ai, sắp tới sẽ ra sao và nên sửa gì trước. Đề thi chấm theo bốn cấp độ, từ "điều gì đã xảy ra" đến "nên làm gì", từ đó dự án đặt ra năm câu hỏi kinh doanh:
+
+| # | Câu hỏi kinh doanh | Cụ thể | Phần trả lời |
+|---:|---|---|---|
+| 1 | **Điều gì đã xảy ra?** | Doanh thu, số đơn, biên lợi nhuận, khách hàng và lượng truy cập biến động thế nào từ 2012, và suy giảm bắt đầu từ đâu? | [1. EDA](#1-eda--chất-lượng-dữ-liệu), [2. Dashboard](#2-dashboard) (trang Executive Overview) |
+| 2 | **Vì sao xảy ra?** | Suy giảm do thiếu traffic, chuyển đổi kém, khách không quay lại, khuyến mãi, tồn kho, hay giao hàng và trả hàng? | [2. Dashboard](#2-dashboard) (trang Customer, Sales & Promotion, Inventory, Logistics & Returns) |
+| 3 | **Nên tập trung vào ai?** | Nhóm khách nào mang về doanh thu, nhóm nào đã im lặng, nhóm nào chưa từng mua? | [3. Phân nhóm khách hàng](#3-phân-nhóm-khách-hàng) |
+| 4 | **Sắp tới sẽ ra sao?** | Doanh thu từng ngày từ 01/2023 đến 07/2024 là bao nhiêu, để lên kế hoạch tồn kho, khuyến mãi và giao hàng? | [4. Dự báo doanh thu](#4-dự-báo-doanh-thu) |
+| 5 | **Nên làm gì?** | Hành động nào làm trước, cho nhóm khách nào, và KPI nào cho biết hành động đó có hiệu quả? | Recommendation ở [mục 3](#recommendation) và [mục 4](#recommendation-1), [`dashboard_analysis_recommendations.md`](reports/markdown/dashboard_analysis_recommendations.md) |
+
+**Câu trả lời ngắn (từ dữ liệu):**
+
+1. **Điều gì đã xảy ra:** doanh thu thuần giảm trung bình 3,86% mỗi năm (CAGR 2013–2022); cùng giai đoạn, sessions tăng 63% nhưng tỷ lệ chuyển đổi (đơn có doanh thu ÷ sessions) giảm từ 1,01% xuống 0,29%.
+2. **Vì sao:** suy giảm đến từ chuyển đổi và giữ chân khách, không phải từ traffic; 28% khách đăng ký (34.091) chưa từng hoàn tất đơn nào.
+3. **Tập trung vào ai:** Champions và Trung thành là 35,8% khách đã mua nhưng mang về 78,5% doanh thu; nhóm Trung thành đã gần 2 năm chưa quay lại.
+4. **Sắp tới:** doanh thu dự báo đi ngang: 1,18 tỷ năm 2023 so với 1,17 tỷ năm 2022; tháng 4–6 chiếm 37,9%; Q3 2023 có nguy cơ bán lỗ.
+5. **Nên làm gì:** ưu tiên giữ Champions và kéo lại nhóm Trung thành, kích hoạt đơn đầu cho khách chưa mua, chuẩn bị hàng cho mùa cao điểm và xem lại chiến dịch giảm 50% năm lẻ; mỗi hành động có KPI và nhóm đối chứng.
+
 ## Cấu trúc dự án
 
 ```text
