@@ -25,37 +25,75 @@ The Overview page shows which factor moved revenue (traffic, conversion, or AOV)
 
 ## 🧱 Data Processing & Data Model
 
-The KPIs set what the model needs. [`build_powerbi_tables.py`](build_powerbi_tables.py) runs SQL on **DuckDB from Python** to clean the raw CSV files and merge them into 10 tables, each at one grain so nothing is counted twice. Output goes to `data/processed/powerbi/`; Power BI imports it and handles the data model.
+The KPIs set what the model needs. [`prepare_powerbi_data.py`](prepare_powerbi_data.py) (Python + pandas) cleans, enriches, and reshapes the 13 raw CSV files into a **star schema**: 5 dimensions, 7 fact tables, and 3 pre-aggregated tables. Output goes to `data/processed/powerbi/`; Power BI imports it and handles the relationships and DAX measures.
 
 ```bash
-python dashboard/build_powerbi_tables.py
+python dashboard/prepare_powerbi_data.py   # ~1–2 min, 15 CSVs (~263 MB)
 ```
 
 ### Transformation steps
 
-1. **Load** the 13 raw CSV files from `data/raw/` into DuckDB and keep them read-only.
-2. **Merge tables that share a grain:** order lines with their order, product cost, and promotion type (`sales_lines`); orders with their payment and shipment (`orders`); returns with the customer and delivery zip of their order (`returns`). Customers get their region and their segment from the segmentation part.
-3. **Filter out orders that bring in no revenue:** 7,275 `created` and 59,462 `cancelled` orders (66,737 in total, 10.3% of all orders). `sales_lines` keeps only `paid`, `shipped`, `delivered`, and `returned` orders, the same rule as the segmentation part; `orders` keeps every status so the cancel rate can still be measured.
-4. **Apply the cleaning rules from the EDA step:** cap refunds at the amount paid (scaled per order, so net revenue is never negative), keep orders without a shipment record out of delivery-time KPIs, drop the constant `reorder_flag`, and leave `sales.csv` out (its revenue is before discounts and includes cancelled orders; it is used only for forecasting). Web traffic is used by day only (sessions, visitors, page views, session duration): `traffic_source` holds one source per day, so it cannot split traffic by channel, and `bounce_rate` (0.3–0.6%) is implausibly low, so neither feeds a KPI.
-5. **Check before export** (the script stops if any check fails): primary keys are unique, every foreign key exists in its lookup table, row counts match the source, and order-line revenue matches `payments` for the same orders.
-6. **Model in Power BI:** a DAX date table marked as the date table; one-to-many, single-direction relationships from lookup tables to data tables (ship and delivery dates as inactive relationships, used with `USERELATIONSHIP`); every DAX measure in one `_Measures` table.
+1. **Load** the 13 raw CSV files from `data/raw/` (read-only). Some files store dates as `dd/mm/yyyy` and others as `yyyy-mm-dd`; the script detects the format per column.
+2. **Build dimensions:** a calendar table (`dim_date`); products with margin, average rating, and return rate; customers with region, RFM scores and labels, cohort month, and the K-Means segment from the segmentation part (if it has been run).
+3. **Build facts, each at one grain:** orders (`fact_orders`: payment, shipping fee, refund, New vs Repeat flag), order lines (`fact_orders_enriched`: revenue, discount, cost, gross profit), returns, shipments (processing and delivery days, delivery bucket), daily sales (MA7/MA30, YoY), monthly inventory (stock value, health label), and daily web traffic (pages per session, conversion rate).
+4. **Count revenue orders only for customer and conversion metrics:** RFM, cohort retention, New vs Repeat, and conversion rate use only `paid`, `shipped`, `delivered`, and `returned` orders, the same rule as the segmentation part. Fact tables keep every status, with an `is_revenue_order` flag, so the cancel rate can still be measured.
+5. **Pre-aggregate** views that are slow or awkward in DAX: the monthly KPI rollup with MoM/YoY growth, the cohort retention matrix (months 0–24), and the rating trend by month × category.
+6. **Model in Power BI:** mark `dim_date` as the date table; one-to-many, single-direction relationships from dimensions to facts; every DAX measure in one `_Measures` table.
+
+### Star schema
+
+```mermaid
+erDiagram
+    dim_date ||--o{ fact_orders : "order_date"
+    dim_date ||--o{ fact_orders_enriched : "order_date"
+    dim_date ||--o{ fact_returns_enriched : "return_date"
+    dim_date ||--o{ fact_shipments_enriched : "ship_date"
+    dim_date ||--o{ fact_inventory : "snapshot_date"
+    dim_date ||--o{ fact_sales_daily : "date"
+    dim_date ||--o{ fact_web_traffic : "traffic_date"
+    dim_customers_rfm ||--o{ fact_orders : "customer_id"
+    dim_customers_rfm ||--o{ fact_orders_enriched : "customer_id"
+    dim_customers_rfm ||--o{ fact_returns_enriched : "customer_id"
+    dim_products ||--o{ fact_orders_enriched : "product_id"
+    dim_products ||--o{ fact_returns_enriched : "product_id"
+    dim_products ||--o{ fact_inventory : "product_id"
+    dim_geography ||--o{ fact_orders : "zip"
+    dim_geography ||--o{ dim_customers_rfm : "zip"
+    dim_promotions ||--o{ fact_orders_enriched : "promo_id"
+    fact_orders ||--o{ fact_orders_enriched : "order_id"
+    fact_orders ||--o| fact_shipments_enriched : "order_id"
+    fact_orders ||--o{ fact_returns_enriched : "order_id"
+```
+
+The `agg_*` tables are already aggregated and stand alone, with no relationships.
 
 ### Output tables
 
-| Type | File | 1 row = | Rows | Relationships in Power BI |
+| Type | File | 1 row = | Rows | Key fields |
 |---|---|---|---:|---|
-| Data | `sales_lines.csv` | 1 order line of a revenue order | 641,002 | Date (order date), customers, products, promotions, geography |
-| Data | `orders.csv` | 1 order, every status | 646,945 | Date (order date; ship and delivery dates inactive), customers, geography |
-| Data | `returns.csv` | 1 returned product | 39,939 | Date (return date), customers, products, geography |
-| Data | `reviews.csv` | 1 review | 113,551 | Date (review date), customers, products |
-| Data | `inventory.csv` | 1 product per month | 60,247 | Date (snapshot date), products |
-| Data | `web_traffic.csv` | 1 day | 3,652 | Date |
-| Lookup | `customers.csv` | 1 customer, with region and segment | 121,930 | |
-| Lookup | `products.csv` | 1 SKU | 2,412 | |
-| Lookup | `promotions.csv` | 1 promotion | 50 | |
-| Lookup | `geography.csv` | 1 zip code | 39,948 | |
+| Dim | `dim_date.csv` | 1 day | 4,018 | year, quarter, month, year_month, day_of_week, is_weekend |
+| Dim | `dim_products.csv` | 1 SKU | 2,412 | category, segment, gross_margin_pct, avg_rating, return_rate_pct |
+| Dim | `dim_customers_rfm.csv` | 1 customer | 121,930 | demographics, region, R/F/M scores, `rfm_segment`, cohort_month, K-Means segment |
+| Dim | `dim_geography.csv` | 1 zip code | 39,948 | city, region, district |
+| Dim | `dim_promotions.csv` | 1 promotion | 50 | promo_type, discount_value, validity period |
+| Fact | `fact_orders.csv` | 1 order, every status | 646,945 | payment_value, shipping_fee, refund, New vs Repeat |
+| Fact | `fact_orders_enriched.csv` | 1 order line, every status | 714,669 | line revenue / net revenue / cost / gross profit, discount_pct, has_promo |
+| Fact | `fact_returns_enriched.csv` | 1 returned product | 39,939 | return_reason, days_to_return, days_after_delivery |
+| Fact | `fact_shipments_enriched.csv` | 1 shipment | 566,067 | processing_days, delivery_days, delivery_bucket |
+| Fact | `fact_sales_daily.csv` | 1 day | 3,833 | revenue, gross margin, MA7/MA30, YoY growth |
+| Fact | `fact_inventory.csv` | 1 product per month | 60,247 | stock value (retail/cost), inventory_health |
+| Fact | `fact_web_traffic.csv` | 1 day | 3,652 | sessions, pages_per_session, conversion_rate_pct |
+| Agg | `agg_monthly_summary.csv` | 1 month | 126 | revenue, orders, customers, AOV, MoM / YoY growth |
+| Agg | `agg_cohort_retention.csv` | 1 cohort × month offset | 2,423 | retention_rate for months 0–24 |
+| Agg | `agg_reviews_summary.csv` | 1 month × category | 504 | avg_rating, % 5-star, % 1-star |
 
-Data tables never link to each other: `returns` is not joined to `orders` in the model. `order_id` stays in each table for drill-down, and cross-table KPIs such as the return rate (orders with a return ÷ delivered orders) work because both tables are filtered by the same date and lookup tables.
+### Modeling decisions
+
+- **Two fact grains for orders.** `payment_value` is order-level, so it lives only in `fact_orders`. Putting it on every order line would double-count orders with several products.
+- **Two revenue definitions, kept apart.** `line_revenue` and `fact_sales_daily.revenue` are *before discount, every order status*; they reconcile exactly (16.43B). `line_net_revenue` and `payment_value` are *after discount*. Sales KPIs use net revenue from revenue orders.
+- **Customers without a revenue order** are labelled `Never Purchased` (no order at all) or `No Converted Order` (every order cancelled or never paid).
+- **Product and geography attributes come through relationships**, not duplicated columns, so the fact tables stay lean.
+- **Known data issues from the EDA, handled in DAX:** refunds can exceed the amount paid (refunds are priced before discount), some shipped orders have no shipment record, and `reorder_flag` is constant. `traffic_source` holds one source per day and `bounce_rate` (0.3–0.6%) is implausibly low, so neither feeds a KPI.
 
 ## 📐 KPIs by Page
 
