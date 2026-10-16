@@ -38,7 +38,7 @@ python dashboard/prepare_powerbi_data.py   # ~1–2 min, 15 CSVs (~263 MB)
 3. **Build facts, each at one grain:** orders (`fact_orders`: payment, shipping fee, refund, New vs Repeat flag), order lines (`fact_orders_enriched`: revenue, discount, cost, gross profit), returns, shipments (processing and delivery days, delivery bucket), daily sales (MA7/MA30, YoY), monthly inventory (stock value, health label), and daily web traffic (pages per session, conversion rate).
 4. **Count revenue orders only for customer and conversion metrics:** RFM, cohort retention, New vs Repeat, and conversion rate use only `paid`, `shipped`, `delivered`, and `returned` orders, the same rule as the segmentation part. Fact tables keep every status, with an `is_revenue_order` flag, so the cancel rate can still be measured.
 5. **Pre-aggregate** views that are slow or awkward in DAX: the monthly KPI rollup with MoM/YoY growth, the cohort retention matrix (months 0–24), and the rating trend by month × category.
-6. **Model in Power BI:** mark `dim_date` as the date table; one-to-many, single-direction relationships from dimensions to facts; every DAX measure in one `_Measures` table.
+6. **Model in Power BI:** mark `dim_date` as the date table; one-to-many, single-direction relationships from dimensions to facts; every DAX measure in one `_Measures` table. Mark the date table and set *Sort by column* for `month_name` (by `month`), `day_name` (by `day_of_week`), and `delivery_bucket` (by `delivery_bucket_order`).
 
 ### Star schema
 
@@ -58,14 +58,11 @@ erDiagram
     dim_products ||--o{ fact_returns_enriched : "product_id"
     dim_products ||--o{ fact_inventory : "product_id"
     dim_geography ||--o{ fact_orders : "zip"
-    dim_geography ||--o{ dim_customers_rfm : "zip"
+    dim_geography ||--o{ fact_orders_enriched : "zip"
     dim_promotions ||--o{ fact_orders_enriched : "promo_id"
-    fact_orders ||--o{ fact_orders_enriched : "order_id"
-    fact_orders ||--o| fact_shipments_enriched : "order_id"
-    fact_orders ||--o{ fact_returns_enriched : "order_id"
 ```
 
-The `agg_*` tables are already aggregated and stand alone, with no relationships.
+Fact tables never link to each other (not even through `order_id`), and `dim_geography` does not link to `dim_customers_rfm` (which already carries `region` and `district`). Each filter therefore has exactly one path, so Power BI never hits an ambiguous-path error. Columns such as `order_status` and `is_revenue_order` are already on every fact table that needs them. The `agg_*` tables are already aggregated and stand alone, with no relationships.
 
 ### Output tables
 

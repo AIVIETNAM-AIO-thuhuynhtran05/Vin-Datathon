@@ -23,9 +23,10 @@ Quan hệ gợi ý trong Power BI (1 → *):
                               fact_inventory[snapshot_date]
   dim_products[product_id]  → fact_orders_enriched, fact_returns_enriched, fact_inventory
   dim_customers[customer_id]→ fact_orders, fact_orders_enriched, fact_returns_enriched
-  dim_geography[zip]        → fact_orders, fact_orders_enriched, dim_customers
+  dim_geography[zip]        → fact_orders, fact_orders_enriched
   dim_promotions[promo_id]  → fact_orders_enriched[promo_id]
-  fact_orders[order_id]     → fact_orders_enriched, fact_returns_enriched, fact_shipments_enriched
+Không nối fact với fact (qua order_id) và không nối dim_geography với dim_customers_rfm: mỗi bộ lọc
+chỉ có một đường đi, tránh lỗi ambiguous path. dim_customers_rfm đã có sẵn region/district.
 Các bảng agg_* đứng riêng (đã tổng hợp sẵn), không cần quan hệ.
 """
 

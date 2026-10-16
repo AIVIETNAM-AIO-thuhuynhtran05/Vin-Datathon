@@ -198,7 +198,7 @@ Trang Overview trả lời doanh thu giảm là do yếu tố nào: traffic, CR 
 3. Dựng bảng fact, mỗi bảng đúng một grain: đơn (`fact_orders`: thanh toán, phí ship, tiền hoàn, đơn mới/mua lại), dòng hàng (`fact_orders_enriched`: doanh thu, giảm giá, giá vốn, lãi gộp), trả hàng, vận chuyển (số ngày xử lý, số ngày giao, nhóm thời gian giao), doanh thu ngày (MA7/MA30, YoY), tồn kho tháng (giá trị tồn, nhãn tình trạng), web traffic ngày (trang/phiên, tỷ lệ chuyển đổi).
 4. RFM, cohort, khách mới/mua lại và tỷ lệ chuyển đổi chỉ tính đơn `paid`/`shipped`/`delivered`/`returned`, giống phần 3. Bảng fact vẫn giữ mọi trạng thái (kèm cờ `is_revenue_order`) để tính tỷ lệ hủy.
 5. Tổng hợp sẵn các góc nhìn khó làm bằng DAX: KPI theo tháng kèm MoM/YoY, ma trận cohort retention (tháng 0–24), điểm đánh giá theo tháng × danh mục.
-6. Data modeling trong Power BI: đánh dấu `dim_date` là Date Table; quan hệ 1-nhiều một chiều từ dim sang fact; mọi measure DAX nằm trong bảng `_Measures`.
+6. Data modeling trong Power BI: đánh dấu `dim_date` là Date Table; quan hệ 1-nhiều một chiều từ dim sang fact; mọi measure DAX nằm trong bảng `_Measures`. Không nối fact với fact (qua `order_id`) và không nối `dim_geography` với `dim_customers_rfm`, để mỗi bộ lọc chỉ có một đường đi (tránh lỗi ambiguous path).
 
 **Đầu ra (15 file CSV):**
 
