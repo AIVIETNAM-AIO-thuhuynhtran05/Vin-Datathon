@@ -188,7 +188,7 @@ Trang Overview trả lời doanh thu giảm là do yếu tố nào: traffic, CR 
 
 | Trang | Câu hỏi | Nội dung chính |
 |---|---|---|
-| Executive Overview | Doanh nghiệp đang lên hay xuống, vì sao? | KPI so với năm trước, cây KPI, xu hướng 2012–2022 |
+| Executive Overview | Doanh nghiệp đang lên hay xuống, vì sao? | Sáu đường xu hướng KPI theo năm (Revenue, Gross Profit, Gross Margin, Orders, AOV, YoY Revenue Growth), cây KPI, xu hướng 2012–2022 |
 | Customer Insights | Khách có mua và có quay lại không? | Funnel khách đăng ký → khách đã mua, cohort retention theo tháng đơn đầu tiên, phân khúc RFM từ phần 3 |
 | Product & Promotion | Sản phẩm nào tạo doanh thu và lợi nhuận, khuyến mãi có hiệu quả không? | Category và margin, AOV và margin khi có hoặc không có khuyến mãi |
 | Inventory | Tồn kho có cân với nhu cầu không? | DOS đã sửa công thức, stockout/overstock, hàng chậm bán (DOS > 365 ngày) |

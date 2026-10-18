@@ -6,7 +6,7 @@ An analysis of a **fashion e-commerce platform** over **2012–2022**, focused o
 
 ## 📌 Dashboard Structure
 
-> **Completed PBIP report:** open [`Sale Analytics1.pbip`](Sale%20Analytics1.pbip) in Power BI Desktop. The report contains five interactive pages and 46 DAX KPI measures in the semantic model's `_KPI` table.
+> **Completed PBIP report:** open [`Sale Analytics1.pbip`](Sale%20Analytics1.pbip) in Power BI Desktop. The report contains five interactive pages and 46 DAX KPI measures in the semantic model's `_KPI` table. The Executive Overview uses yearly line trends for Revenue, Gross Profit, Gross Margin, Orders, AOV, and YoY Revenue Growth instead of single-value KPI cards.
 
 The dashboard goes from overview to detail and is built around one KPI tree:
 
@@ -17,7 +17,7 @@ The Overview page shows which factor moved revenue (traffic, conversion, or AOV)
 
 | Page | Business question | Main content |
 |---|---|---|
-| **Executive Overview** | Is the business growing or shrinking, and why? | KPIs vs. last year, the KPI tree, 2012–2022 trend |
+| **Executive Overview** | Is the business growing or shrinking, and why? | Six headline KPI trends by year, the KPI tree, 2012–2022 trend |
 | **Customer Insights** | Do customers buy, and do they come back? | Registered → buyer funnel, cohort retention by first-order month, RFM segments from the segmentation part |
 | **Product & Promotion** | Which products and categories drive revenue and profit, and do promotions pay off? | Category and margin, AOV and margin with vs. without a promotion |
 | **Inventory** | Is stock in balance with demand? | Days of Supply (corrected formula), stockout/overstock, slow stock (DOS > 365 days) |
