@@ -17,7 +17,7 @@ Doanh nghiệp tăng trưởng đến khoảng năm 2016 rồi suy giảm suốt
 | 2 | **Vì sao xảy ra?** | Suy giảm do thiếu traffic, chuyển đổi kém, khách không quay lại, khuyến mãi, tồn kho, hay giao hàng và trả hàng? | [2. Dashboard](#2-dashboard) (trang Customer Insights, Product & Promotion, Inventory, Logistics & Returns) |
 | 3 | **Nên tập trung vào ai?** | Nhóm khách nào mang về doanh thu, nhóm nào đã im lặng, nhóm nào chưa từng mua? | [3. Phân nhóm khách hàng](#3-phân-nhóm-khách-hàng) |
 | 4 | **Sắp tới sẽ ra sao?** | Doanh thu từng ngày từ 01/2023 đến 07/2024 là bao nhiêu, để lên kế hoạch tồn kho, khuyến mãi và giao hàng? | [4. Dự báo doanh thu](#4-dự-báo-doanh-thu) |
-| 5 | **Nên làm gì?** | Hành động nào làm trước, cho nhóm khách nào, và KPI nào cho biết hành động đó có hiệu quả? | Recommendation ở [mục 3](#recommendation) và [mục 4](#recommendation-1), [`dashboard_analysis_recommendations.md`](reports/markdown/dashboard_analysis_recommendations.md) |
+| 5 | **Nên làm gì?** | Hành động nào làm trước, cho nhóm khách nào, và KPI nào cho biết hành động đó có hiệu quả? | Recommendation ở [mục 3](#recommendation) và [mục 4](#recommendation-1) |
 
 **Câu trả lời ngắn (từ dữ liệu):**
 
@@ -72,8 +72,7 @@ Doanh nghiệp tăng trưởng đến khoảng năm 2016 rồi suy giảm suốt
 │       ├── customer_segmentation_k_selection.md  # (tự sinh) Chọn số cụm k
 │       ├── customer_segment_profiles.md # (tự sinh) Profile các nhóm khách hàng
 │       ├── forecasting_eda.md           # (tự sinh) EDA chuỗi thời gian
-│       ├── forecasting_models.md        # (tự sinh) Mô hình, CV, SHAP, dự báo
-│       └── dashboard_analysis_recommendations.md
+│       └── forecasting_models.md        # (tự sinh) Mô hình, CV, SHAP, dự báo
 ├── data/
 │   ├── raw/                             # CSV gốc (chỉ đọc)
 │   └── processed/                       # Tự sinh, không đưa vào Git
@@ -230,7 +229,6 @@ Sơ đồ quan hệ (star schema), các quyết định mô hình, định nghĩ
 
 - **Power BI report (PBIP):** [`dashboard/Sale Analytics1.pbip`](dashboard/Sale%20Analytics1.pbip) — dự án gồm 5 trang tương tác: Executive Overview, Customer Insights, Product & Promotion, Inventory Health và Logistics & Returns. 46 DAX KPI measures nằm trong bảng `_KPI`.
 - **Mở và refresh:** mở file PBIP bằng Power BI Desktop. Dữ liệu raw/processed và PBIX không được commit; để refresh, chạy `python dashboard/prepare_powerbi_data.py` sau khi có dữ liệu đầu vào, rồi cập nhật các đường dẫn `File.Contents` trong semantic model cho vị trí các CSV của bạn.
-- **Phân tích & khuyến nghị:** [`reports/markdown/dashboard_analysis_recommendations.md`](reports/markdown/dashboard_analysis_recommendations.md)
 
 ## 3. Phân nhóm khách hàng
 
