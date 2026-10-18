@@ -1,0 +1,122 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "logistics-region-detail",
+  "position": {
+    "x": 1270,
+    "y": 650,
+    "z": 0,
+    "height": 350,
+    "width": 600,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_shipments_enriched"
+                    }
+                  },
+                  "Property": "region"
+                }
+              },
+              "queryRef": "fact_shipments_enriched.region",
+              "nativeQueryRef": "region",
+              "displayName": "Region"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_KPI"
+                    }
+                  },
+                  "Property": "Shipment Orders"
+                }
+              },
+              "queryRef": "_KPI.Shipment Orders",
+              "nativeQueryRef": "Shipment Orders",
+              "displayName": "Orders shipped"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_KPI"
+                    }
+                  },
+                  "Property": "Delivery Days"
+                }
+              },
+              "queryRef": "_KPI.Delivery Days",
+              "nativeQueryRef": "Delivery Days",
+              "displayName": "Delivery days"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_KPI"
+                    }
+                  },
+                  "Property": "Order-to-Ship Days"
+                }
+              },
+              "queryRef": "_KPI.Order-to-Ship Days",
+              "nativeQueryRef": "Order-to-Ship Days",
+              "displayName": "Order-to-ship days"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_KPI"
+                    }
+                  },
+                  "Property": "Total Shipping Cost"
+                }
+              },
+              "queryRef": "_KPI.Total Shipping Cost",
+              "nativeQueryRef": "Total Shipping Cost",
+              "displayName": "Shipping cost"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Logistics service by region'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "howCreated": "Copilot"
+}

@@ -6,7 +6,7 @@ An analysis of a **fashion e-commerce platform** over **2012–2022**, focused o
 
 ## 📌 Dashboard Structure
 
-> 🔄 **Being rebuilt.** Version 1 used 5 flat tables with only 2 relationships, no shared date table, and no data cleaning from the EDA step. The new version merges the raw data into clean tables, models them in Power BI, and follows the 5-page structure below.
+> **Completed PBIP report:** open [`Sale Analytics1.pbip`](Sale%20Analytics1.pbip) in Power BI Desktop. The report contains five interactive pages and 46 DAX KPI measures in the semantic model's `_KPI` table.
 
 The dashboard goes from overview to detail and is built around one KPI tree:
 
@@ -18,10 +18,14 @@ The Overview page shows which factor moved revenue (traffic, conversion, or AOV)
 | Page | Business question | Main content |
 |---|---|---|
 | **Executive Overview** | Is the business growing or shrinking, and why? | KPIs vs. last year, the KPI tree, 2012–2022 trend |
-| **Customer** | Do customers buy, and do they come back? | Registered → buyer funnel, cohort retention by first-order month, RFM segments from the segmentation part |
-| **Sales & Promotion** | Where do revenue and profit come from, and do promotions pay off? | Category and margin, AOV and margin with vs. without a promotion |
+| **Customer Insights** | Do customers buy, and do they come back? | Registered → buyer funnel, cohort retention by first-order month, RFM segments from the segmentation part |
+| **Product & Promotion** | Which products and categories drive revenue and profit, and do promotions pay off? | Category and margin, AOV and margin with vs. without a promotion |
 | **Inventory** | Is stock in balance with demand? | Days of Supply (corrected formula), stockout/overstock, slow stock (DOS > 365 days) |
 | **Logistics & Returns** | Do orders arrive, and do they stay? | Delivery time by region, return reasons, Wrong Size by product |
+
+Report slicers support filtering the relevant analysis by date, product/category, order source, promotion, customer segment, demographics, inventory, and logistics attributes.
+
+The PBIP project and its TMDL model are included in this folder. The source and processed datasets, as well as the large PBIX file, are intentionally excluded from GitHub. To refresh the model, run `python dashboard/prepare_powerbi_data.py` from the repository root after obtaining the input data, then update the `File.Contents` paths in the TMDL partitions to the location of the generated CSVs.
 
 ## 🧱 Data Processing & Data Model
 
@@ -38,7 +42,7 @@ python dashboard/prepare_powerbi_data.py   # ~1–2 min, 15 CSVs (~263 MB)
 3. **Build facts, each at one grain:** orders (`fact_orders`: payment, shipping fee, refund, New vs Repeat flag), order lines (`fact_orders_enriched`: revenue, discount, cost, gross profit), returns, shipments (processing and delivery days, delivery bucket), daily sales (MA7/MA30, YoY), monthly inventory (stock value, health label), and daily web traffic (pages per session, conversion rate).
 4. **Count revenue orders only for customer and conversion metrics:** RFM, cohort retention, New vs Repeat, and conversion rate use only `paid`, `shipped`, `delivered`, and `returned` orders, the same rule as the segmentation part. Fact tables keep every status, with an `is_revenue_order` flag, so the cancel rate can still be measured.
 5. **Pre-aggregate** views that are slow or awkward in DAX: the monthly KPI rollup with MoM/YoY growth, the cohort retention matrix (months 0–24), and the rating trend by month × category.
-6. **Model in Power BI:** mark `dim_date` as the date table; one-to-many, single-direction relationships from dimensions to facts; every DAX measure in one `_Measures` table. Mark the date table and set *Sort by column* for `month_name` (by `month`), `day_name` (by `day_of_week`), and `delivery_bucket` (by `delivery_bucket_order`).
+6. **Model in Power BI:** mark `dim_date` as the date table; use one-to-many, single-direction relationships from dimensions to facts; keep the DAX KPI measures in the `_KPI` table. Set *Sort by column* for `month_name` (by `month`), `day_name` (by `day_of_week`), and `delivery_bucket` (by `delivery_bucket_order`).
 
 ### Star schema
 

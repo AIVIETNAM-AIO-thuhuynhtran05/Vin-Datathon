@@ -8,3 +8,4 @@ data/raw/
 
 # File Power BI nặng — chỉ lưu local
 dashboard/*.pbix
+**/.pbi/

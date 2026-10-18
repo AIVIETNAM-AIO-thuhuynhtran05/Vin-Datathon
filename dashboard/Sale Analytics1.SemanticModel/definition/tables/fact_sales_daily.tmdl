@@ -1,0 +1,101 @@
+table fact_sales_daily
+	lineageTag: b3838df5-fef2-4c31-b499-2cb70bf61531
+
+	column date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c04a9e26-46fc-4689-8177-804ce0664749
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column revenue
+		dataType: double
+		lineageTag: 1eac1697-fbe1-4661-b8df-05c85e2d40f9
+		summarizeBy: sum
+		sourceColumn: revenue
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column cogs
+		dataType: double
+		lineageTag: aeddd6a0-139c-44e1-b5d3-bb52f79330ae
+		summarizeBy: sum
+		sourceColumn: cogs
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column gross_profit
+		dataType: double
+		lineageTag: 112acab4-d958-4a86-bc06-974b87027dbf
+		summarizeBy: sum
+		sourceColumn: gross_profit
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column gross_margin_pct
+		dataType: double
+		lineageTag: 714edd57-b444-404e-819b-1af1d0dd2286
+		summarizeBy: sum
+		sourceColumn: gross_margin_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column revenue_ma7
+		dataType: double
+		lineageTag: 0bde59c5-13a5-4d80-acb7-6ec4ddee8082
+		summarizeBy: sum
+		sourceColumn: revenue_ma7
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column revenue_ma30
+		dataType: double
+		lineageTag: 28439bce-84c4-46f6-9829-fded364cab4a
+		summarizeBy: sum
+		sourceColumn: revenue_ma30
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column revenue_ly
+		dataType: string
+		lineageTag: 2862eacd-7fb5-4206-8a6f-6f0190dac983
+		summarizeBy: none
+		sourceColumn: revenue_ly
+
+		annotation SummarizationSetBy = Automatic
+
+	column yoy_growth_pct
+		dataType: string
+		lineageTag: 505f0726-a425-47e7-853e-7694326c537b
+		summarizeBy: none
+		sourceColumn: yoy_growth_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_sales_daily = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\fact_sales_daily.csv"), [Delimiter = ",", Columns = 9, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"date", type date}, {"revenue", type number}, {"cogs", type number}, {"gross_profit", type number}, {"gross_margin_pct", type number}, {"revenue_ma7", type number}, {"revenue_ma30", type number}, {"revenue_ly", type text}, {"yoy_growth_pct", type text}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

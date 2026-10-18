@@ -1,0 +1,113 @@
+table dim_promotions
+	lineageTag: a5fbb785-73df-4efc-8a61-92a123471f9a
+
+	column promo_id
+		dataType: string
+		lineageTag: bd61a3fa-dd3d-47da-9ee8-623a015026d1
+		summarizeBy: none
+		sourceColumn: promo_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column promo_name
+		dataType: string
+		lineageTag: 55b27fb0-7767-4d54-a50f-b8b69ffdd51d
+		summarizeBy: none
+		sourceColumn: promo_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column promo_type
+		dataType: string
+		lineageTag: 86e89b71-4587-488a-86d5-643628efebb6
+		summarizeBy: none
+		sourceColumn: promo_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column discount_value
+		dataType: int64
+		formatString: 0
+		lineageTag: 3c67d0ee-15c5-443d-9711-c51f5b1116af
+		summarizeBy: sum
+		sourceColumn: discount_value
+
+		annotation SummarizationSetBy = Automatic
+
+	column start_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ac8f761b-32a4-402c-97eb-2a1b100dabd3
+		summarizeBy: none
+		sourceColumn: start_date
+
+		variation Variation
+			isDefault
+			relationship: 87970105-edb8-466e-82b1-6d8ee26574bb
+			defaultHierarchy: LocalDateTable_bd2d4756-16a9-4f00-a042-000c8ac2a8d1.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 6784ddd2-e21a-4f86-bcfc-5ba36d05cae3
+		summarizeBy: none
+		sourceColumn: end_date
+
+		variation Variation
+			isDefault
+			relationship: 5eb03776-3c3a-42f7-b9eb-2fd685cbc00b
+			defaultHierarchy: LocalDateTable_5c56771d-e586-4878-b954-b2ce59980947.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column applicable_category
+		dataType: string
+		lineageTag: f60accf9-8bd6-416e-aba3-cca664d2ab4b
+		summarizeBy: none
+		sourceColumn: applicable_category
+
+		annotation SummarizationSetBy = Automatic
+
+	column promo_channel
+		dataType: string
+		lineageTag: d5a1568b-5d81-4b44-8b84-100ec7091d42
+		summarizeBy: none
+		sourceColumn: promo_channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column stackable_flag
+		dataType: int64
+		formatString: 0
+		lineageTag: 205078a3-3e17-4aff-8bf1-166428ede871
+		summarizeBy: sum
+		sourceColumn: stackable_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column min_order_value
+		dataType: int64
+		formatString: 0
+		lineageTag: b8eb1ff6-9b25-4b7a-84f5-a844f47d5ecc
+		summarizeBy: sum
+		sourceColumn: min_order_value
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_promotions = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\dim_promotions.csv"), [Delimiter = ",", Columns = 10, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"promo_id", type text}, {"promo_name", type text}, {"promo_type", type text}, {"discount_value", Int64.Type}, {"start_date", type date}, {"end_date", type date}, {"applicable_category", type text}, {"promo_channel", type text}, {"stackable_flag", Int64.Type}, {"min_order_value", Int64.Type}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

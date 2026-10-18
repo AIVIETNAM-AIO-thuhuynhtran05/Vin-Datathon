@@ -1,0 +1,253 @@
+table dim_customers_rfm
+	lineageTag: 99a42feb-1060-47c0-8c2c-4c58fc106969
+
+	column customer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 5f195ef0-3456-409e-88ea-68e6ed72f9e7
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column zip
+		dataType: int64
+		formatString: 0
+		lineageTag: 2ebb9d43-d374-4563-b47d-20b28923cbde
+		summarizeBy: sum
+		sourceColumn: zip
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: 8170936e-cb2f-42f3-8d72-652ce4a3db04
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column signup_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 5cf14df0-93da-41ab-bfc9-dafa00e83afe
+		summarizeBy: none
+		sourceColumn: signup_date
+
+		variation Variation
+			isDefault
+			relationship: a1de78b3-a6bf-4e46-90be-9cb641363719
+			defaultHierarchy: LocalDateTable_8e19f469-30eb-4f54-826f-851dbafbdfe4.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column gender
+		dataType: string
+		lineageTag: 171573cc-a67c-4e6c-b1b0-5c0afaae7920
+		summarizeBy: none
+		sourceColumn: gender
+
+		annotation SummarizationSetBy = Automatic
+
+	column age_group
+		dataType: string
+		lineageTag: b9fe299d-32e1-489c-a0f3-a63d16df2ebc
+		summarizeBy: none
+		sourceColumn: age_group
+
+		annotation SummarizationSetBy = Automatic
+
+	column acquisition_channel
+		dataType: string
+		lineageTag: 365b0669-ebb3-47a6-b237-3a581e86fe84
+		summarizeBy: none
+		sourceColumn: acquisition_channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		lineageTag: a0ee2c05-6497-4d5d-bc48-df87ef56e332
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column district
+		dataType: string
+		lineageTag: bbb4e468-2e1b-42e8-ad55-9d83fff4b0bd
+		summarizeBy: none
+		sourceColumn: district
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_orders
+		dataType: int64
+		formatString: 0
+		lineageTag: d193049b-9683-4e03-9f7b-8e7fe0cfddd8
+		summarizeBy: sum
+		sourceColumn: total_orders
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_order_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: bba7de16-615d-458d-818c-238b3b9cb00d
+		summarizeBy: none
+		sourceColumn: first_order_date
+
+		variation Variation
+			isDefault
+			relationship: b1fe8285-46f5-44c4-93a0-f7806aa723c5
+			defaultHierarchy: LocalDateTable_bc39cd73-9a23-4e21-af58-68f97384ac63.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column last_order_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: bd1dd837-2464-47b0-93e3-ee1446980538
+		summarizeBy: none
+		sourceColumn: last_order_date
+
+		variation Variation
+			isDefault
+			relationship: 7c03f385-a92c-464e-ae0a-ce04c095cfe1
+			defaultHierarchy: LocalDateTable_36337706-7c4c-436d-9469-f63516b881eb.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column frequency
+		dataType: int64
+		formatString: 0
+		lineageTag: 1179022e-d871-4bab-a08a-dfa1d8d4fff7
+		summarizeBy: sum
+		sourceColumn: frequency
+
+		annotation SummarizationSetBy = Automatic
+
+	column monetary
+		dataType: double
+		lineageTag: 71416089-a046-45b0-905d-32786e421d64
+		summarizeBy: sum
+		sourceColumn: monetary
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_order_value
+		dataType: double
+		lineageTag: 8e0f9433-922b-4a69-b0f3-af8b9df8a529
+		summarizeBy: sum
+		sourceColumn: avg_order_value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column recency_days
+		dataType: int64
+		formatString: 0
+		lineageTag: 6fbb8299-2859-4bd0-861d-34f7b7b2ebcd
+		summarizeBy: sum
+		sourceColumn: recency_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column tenure_days
+		dataType: int64
+		formatString: 0
+		lineageTag: 9ea3fece-374b-4e43-a4d3-167e18699127
+		summarizeBy: sum
+		sourceColumn: tenure_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column R_score
+		dataType: int64
+		formatString: 0
+		lineageTag: 0591a726-372f-4346-8352-13440cb8735e
+		summarizeBy: sum
+		sourceColumn: R_score
+
+		annotation SummarizationSetBy = Automatic
+
+	column F_score
+		dataType: int64
+		formatString: 0
+		lineageTag: f6526887-2381-4e63-8d39-64d43a21c93b
+		summarizeBy: sum
+		sourceColumn: F_score
+
+		annotation SummarizationSetBy = Automatic
+
+	column M_score
+		dataType: int64
+		formatString: 0
+		lineageTag: 5f15b5cd-4463-48ed-b618-f2fca14b91ef
+		summarizeBy: sum
+		sourceColumn: M_score
+
+		annotation SummarizationSetBy = Automatic
+
+	column RFM_score
+		dataType: int64
+		formatString: 0
+		lineageTag: 2d3afb74-d07a-4afd-ac40-3b7559171c23
+		summarizeBy: sum
+		sourceColumn: RFM_score
+
+		annotation SummarizationSetBy = Automatic
+
+	column rfm_segment
+		dataType: string
+		lineageTag: eae7d397-edee-4742-9135-b72a5d7e6416
+		summarizeBy: none
+		sourceColumn: rfm_segment
+
+		annotation SummarizationSetBy = Automatic
+
+	column signup_year
+		dataType: int64
+		formatString: 0
+		lineageTag: c0525f81-0611-4c29-80dc-ffd9cded7d75
+		summarizeBy: sum
+		sourceColumn: signup_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column cohort_month
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 5dbea052-ca94-469a-a183-b83e7bc70780
+		summarizeBy: none
+		sourceColumn: cohort_month
+
+		variation Variation
+			isDefault
+			relationship: 841a506b-813f-491e-b301-2a41a49484e9
+			defaultHierarchy: LocalDateTable_6e554025-a1dc-475d-8982-4539d6956c1d.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition dim_customers_rfm = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\dim_customers_rfm.csv"), [Delimiter = ",", Columns = 24, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"customer_id", Int64.Type}, {"zip", Int64.Type}, {"city", type text}, {"signup_date", type date}, {"gender", type text}, {"age_group", type text}, {"acquisition_channel", type text}, {"region", type text}, {"district", type text}, {"total_orders", Int64.Type}, {"first_order_date", type date}, {"last_order_date", type date}, {"frequency", Int64.Type}, {"monetary", type number}, {"avg_order_value", type number}, {"recency_days", Int64.Type}, {"tenure_days", Int64.Type}, {"R_score", Int64.Type}, {"F_score", Int64.Type}, {"M_score", Int64.Type}, {"RFM_score", Int64.Type}, {"rfm_segment", type text}, {"signup_year", Int64.Type}, {"cohort_month", type date}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

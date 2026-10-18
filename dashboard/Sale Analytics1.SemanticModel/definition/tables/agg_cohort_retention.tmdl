@@ -1,0 +1,76 @@
+table agg_cohort_retention
+	lineageTag: 515f12ba-f81e-466f-8526-b9e32143a748
+
+	column cohort_month
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: a9d56611-a1f0-4655-9ac3-cb0e66a16732
+		summarizeBy: none
+		sourceColumn: cohort_month
+
+		variation Variation
+			isDefault
+			relationship: 975da517-bd05-4f42-b0e9-0dab7c8a0c45
+			defaultHierarchy: LocalDateTable_770990d3-c89c-4f8d-b5ac-b0098705210d.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column period_number
+		dataType: int64
+		formatString: 0
+		lineageTag: d155df20-44c8-4254-8686-934be37fe13f
+		summarizeBy: sum
+		sourceColumn: period_number
+
+		annotation SummarizationSetBy = Automatic
+
+	column active_customers
+		dataType: int64
+		formatString: 0
+		lineageTag: dccf8a07-2baa-41b7-aa9a-4f71b14540bc
+		summarizeBy: sum
+		sourceColumn: active_customers
+
+		annotation SummarizationSetBy = Automatic
+
+	column cohort_size
+		dataType: int64
+		formatString: 0
+		lineageTag: c8a3817f-493e-4da0-a1dc-987ab2eeb6ae
+		summarizeBy: sum
+		sourceColumn: cohort_size
+
+		annotation SummarizationSetBy = Automatic
+
+	column retention_rate
+		dataType: double
+		lineageTag: dcbea02d-0740-4ec5-acf4-381ba088b1c9
+		summarizeBy: sum
+		sourceColumn: retention_rate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column cohort_year
+		dataType: int64
+		formatString: 0
+		lineageTag: 82bdcc8f-1012-44c7-8ca0-6ac36dba2eea
+		summarizeBy: sum
+		sourceColumn: cohort_year
+
+		annotation SummarizationSetBy = Automatic
+
+	partition agg_cohort_retention = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\agg_cohort_retention.csv"), [Delimiter = ",", Columns = 6, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"cohort_month", type date}, {"period_number", Int64.Type}, {"active_customers", Int64.Type}, {"cohort_size", Int64.Type}, {"retention_rate", type number}, {"cohort_year", Int64.Type}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

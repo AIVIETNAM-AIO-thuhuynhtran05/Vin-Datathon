@@ -1,0 +1,210 @@
+table fact_orders
+	lineageTag: 7ba1745d-82a7-4535-bea0-79e7e133b027
+
+	column order_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 94726018-5b07-4cd5-9460-989bb8f6ab51
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: f0d521d9-e1d4-4b96-8095-f6815fae09f0
+		summarizeBy: none
+		sourceColumn: order_date
+
+		variation Variation
+			isDefault
+			relationship: 8b3a8ff9-9243-4bfc-849b-130413e310ec
+			defaultHierarchy: LocalDateTable_daf3cf55-53b0-4966-9aeb-c059ebe74908.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column customer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: c6d8d573-528c-400f-ade2-9972838965eb
+		summarizeBy: sum
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column zip
+		dataType: int64
+		formatString: 0
+		lineageTag: 1572f04a-c19c-4462-803e-3427f3adcc73
+		summarizeBy: sum
+		sourceColumn: zip
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_status
+		dataType: string
+		lineageTag: e339d3ea-c478-4571-bce0-874240c78a9f
+		summarizeBy: none
+		sourceColumn: order_status
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_method
+		dataType: string
+		lineageTag: 514e95a2-eec8-4421-80a7-9e4380cda15e
+		summarizeBy: none
+		sourceColumn: payment_method
+
+		annotation SummarizationSetBy = Automatic
+
+	column device_type
+		dataType: string
+		lineageTag: 5d76a004-95d1-4e64-aecd-1b988a0682cc
+		summarizeBy: none
+		sourceColumn: device_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_source
+		dataType: string
+		lineageTag: 5b9edf5f-f5c7-4239-bd58-733b5a23697a
+		summarizeBy: none
+		sourceColumn: order_source
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_value
+		dataType: double
+		lineageTag: 99b8b230-d83c-42ce-b6a2-e0e1dfa52e05
+		summarizeBy: sum
+		sourceColumn: payment_value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column installments
+		dataType: int64
+		formatString: 0
+		lineageTag: 969b5a37-a2b4-4eb1-a768-b38d4469c646
+		summarizeBy: sum
+		sourceColumn: installments
+
+		annotation SummarizationSetBy = Automatic
+
+	column item_lines
+		dataType: int64
+		formatString: 0
+		lineageTag: 4df7c977-7c97-410e-8618-e70162d52863
+		summarizeBy: sum
+		sourceColumn: item_lines
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_qty
+		dataType: int64
+		formatString: 0
+		lineageTag: 989205a6-afa5-48fc-8652-86f0e59a4670
+		summarizeBy: sum
+		sourceColumn: total_qty
+
+		annotation SummarizationSetBy = Automatic
+
+	column gross_revenue
+		dataType: double
+		lineageTag: 1672b282-51fb-42a6-8649-6f487cb1ad54
+		summarizeBy: sum
+		sourceColumn: gross_revenue
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column discount_amount
+		dataType: int64
+		formatString: 0
+		lineageTag: 5c64bd85-8112-4256-abd8-a99e29c0ccbe
+		summarizeBy: sum
+		sourceColumn: discount_amount
+
+		annotation SummarizationSetBy = Automatic
+
+	column has_promo
+		dataType: int64
+		formatString: 0
+		lineageTag: a2233684-1f25-4ba9-bde3-03a9f9afd0f0
+		summarizeBy: sum
+		sourceColumn: has_promo
+
+		annotation SummarizationSetBy = Automatic
+
+	column shipping_fee
+		dataType: double
+		lineageTag: 2536a3c4-7a71-417b-a124-c779de90f6f1
+		summarizeBy: sum
+		sourceColumn: shipping_fee
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column refund_amount
+		dataType: double
+		lineageTag: cfdb013d-2a30-46f7-b4ab-e2cc251bb8a7
+		summarizeBy: sum
+		sourceColumn: refund_amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column is_revenue_order
+		dataType: int64
+		formatString: 0
+		lineageTag: f39cfc67-8f15-45fd-a384-4907cd7174ed
+		summarizeBy: sum
+		sourceColumn: is_revenue_order
+
+		annotation SummarizationSetBy = Automatic
+
+	column net_revenue_after_refund
+		dataType: double
+		lineageTag: 96947c96-4080-471e-85a2-7ada7707815b
+		summarizeBy: sum
+		sourceColumn: net_revenue_after_refund
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column customer_order_seq
+		dataType: int64
+		formatString: 0
+		lineageTag: b58bd717-042a-4af4-88f6-2315dd69770e
+		summarizeBy: sum
+		sourceColumn: customer_order_seq
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_order_type
+		dataType: string
+		lineageTag: 0b83f80c-08c4-40e6-b228-8a851c819165
+		summarizeBy: none
+		sourceColumn: customer_order_type
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_orders = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\fact_orders.csv"), [Delimiter = ",", Columns = 21, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"order_id", Int64.Type}, {"order_date", type date}, {"customer_id", Int64.Type}, {"zip", Int64.Type}, {"order_status", type text}, {"payment_method", type text}, {"device_type", type text}, {"order_source", type text}, {"payment_value", type number}, {"installments", Int64.Type}, {"item_lines", Int64.Type}, {"total_qty", Int64.Type}, {"gross_revenue", type number}, {"discount_amount", Int64.Type}, {"has_promo", Int64.Type}, {"shipping_fee", type number}, {"refund_amount", type number}, {"is_revenue_order", Int64.Type}, {"net_revenue_after_refund", type number}, {"customer_order_seq", Int64.Type}, {"customer_order_type", type text}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

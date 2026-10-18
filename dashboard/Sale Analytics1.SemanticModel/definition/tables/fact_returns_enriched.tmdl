@@ -1,0 +1,153 @@
+table fact_returns_enriched
+	lineageTag: 53b44adb-ff4d-4e97-a944-11c95d75d255
+
+	column return_id
+		dataType: string
+		lineageTag: 3189c3ca-9053-40f8-9df5-e1db44578c4a
+		summarizeBy: none
+		sourceColumn: return_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 1b8a2593-e0ab-4c9e-82b2-90293e19c9a0
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 6456bcae-6bc2-4283-b80d-a2d61deff3d4
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column return_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 42f0c03c-b7bc-4419-86dd-3c7906cf966a
+		summarizeBy: none
+		sourceColumn: return_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column return_reason
+		dataType: string
+		lineageTag: 4c29cb29-984d-48e3-84c8-50ded2bf50a3
+		summarizeBy: none
+		sourceColumn: return_reason
+
+		annotation SummarizationSetBy = Automatic
+
+	column return_quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 62d189fd-9136-4af4-adae-5d4b13fe2deb
+		summarizeBy: sum
+		sourceColumn: return_quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column refund_amount
+		dataType: double
+		lineageTag: 8e4a5a20-bfa4-4f72-83fb-70d173ba6753
+		summarizeBy: sum
+		sourceColumn: refund_amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column order_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c343f28c-ffbd-4942-9aa9-c09c9decd2fb
+		summarizeBy: none
+		sourceColumn: order_date
+
+		variation Variation
+			isDefault
+			relationship: 2cac6179-0d42-4515-9843-f276ae42ba28
+			defaultHierarchy: LocalDateTable_559033c9-879f-4f8f-a2db-e4fcb4b0ef93.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column customer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 11cd8c00-d487-470b-bb4d-0bfbf28f967a
+		summarizeBy: sum
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_source
+		dataType: string
+		lineageTag: 62d2a1d2-ffaa-436e-baff-87c7af8c879a
+		summarizeBy: none
+		sourceColumn: order_source
+
+		annotation SummarizationSetBy = Automatic
+
+	column device_type
+		dataType: string
+		lineageTag: a59821bb-ebe5-4207-8f19-09a8a209a892
+		summarizeBy: none
+		sourceColumn: device_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivery_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 9f8db66a-8277-42bc-ae19-339d238e76b4
+		summarizeBy: none
+		sourceColumn: delivery_date
+
+		variation Variation
+			isDefault
+			relationship: 87971dc6-c260-42cc-b06a-883f2bf8067c
+			defaultHierarchy: LocalDateTable_de8237f3-8cff-4aa2-9b1f-f23fd0b17079.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column days_to_return
+		dataType: int64
+		formatString: 0
+		lineageTag: b936fbd4-095e-4626-ac55-160415ba9895
+		summarizeBy: sum
+		sourceColumn: days_to_return
+
+		annotation SummarizationSetBy = Automatic
+
+	column days_after_delivery
+		dataType: int64
+		formatString: 0
+		lineageTag: a41f9260-4747-4f61-93ac-74e23284a646
+		summarizeBy: sum
+		sourceColumn: days_after_delivery
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_returns_enriched = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\fact_returns_enriched.csv"), [Delimiter = ",", Columns = 14, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"return_id", type text}, {"order_id", Int64.Type}, {"product_id", Int64.Type}, {"return_date", type date}, {"return_reason", type text}, {"return_quantity", Int64.Type}, {"refund_amount", type number}, {"order_date", type date}, {"customer_id", Int64.Type}, {"order_source", type text}, {"device_type", type text}, {"delivery_date", type date}, {"days_to_return", Int64.Type}, {"days_after_delivery", Int64.Type}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

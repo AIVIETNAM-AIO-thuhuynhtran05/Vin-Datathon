@@ -1,0 +1,155 @@
+table fact_inventory
+	lineageTag: faf17a36-a0f6-4f50-9654-a25702900ee8
+
+	column snapshot_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 7596d975-4e26-423c-87ff-e5b2173c104a
+		summarizeBy: none
+		sourceColumn: snapshot_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: c888d909-e11b-4cdf-9615-98ab304e4d0f
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column stock_on_hand
+		dataType: int64
+		formatString: 0
+		lineageTag: ac3d4aa7-deb1-4550-a11c-a07343e103a6
+		summarizeBy: sum
+		sourceColumn: stock_on_hand
+
+		annotation SummarizationSetBy = Automatic
+
+	column units_received
+		dataType: int64
+		formatString: 0
+		lineageTag: 4b5d8237-f808-4f5d-8cb4-36350d2b5b04
+		summarizeBy: sum
+		sourceColumn: units_received
+
+		annotation SummarizationSetBy = Automatic
+
+	column units_sold
+		dataType: int64
+		formatString: 0
+		lineageTag: 909188bf-68b1-4eee-b94f-87a26c600398
+		summarizeBy: sum
+		sourceColumn: units_sold
+
+		annotation SummarizationSetBy = Automatic
+
+	column stockout_days
+		dataType: int64
+		formatString: 0
+		lineageTag: 23fce753-d95d-4b81-86c2-ec5300418b7a
+		summarizeBy: sum
+		sourceColumn: stockout_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column days_of_supply
+		dataType: double
+		lineageTag: 606b7968-7fec-4b14-b622-087ea4ec5a46
+		summarizeBy: sum
+		sourceColumn: days_of_supply
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column fill_rate
+		dataType: double
+		lineageTag: 6320a095-6e1c-4bcc-93b4-99bc881ba838
+		summarizeBy: sum
+		sourceColumn: fill_rate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column stockout_flag
+		dataType: int64
+		formatString: 0
+		lineageTag: 07244afb-5ae2-40e5-a4a2-dfee026c4102
+		summarizeBy: sum
+		sourceColumn: stockout_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column overstock_flag
+		dataType: int64
+		formatString: 0
+		lineageTag: abf75246-48ed-4893-bc0d-e5e5e9b19506
+		summarizeBy: sum
+		sourceColumn: overstock_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column reorder_flag
+		dataType: int64
+		formatString: 0
+		lineageTag: 221f3251-9e12-48ce-a2f2-18e14512dc3c
+		summarizeBy: sum
+		sourceColumn: reorder_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column sell_through_rate
+		dataType: double
+		lineageTag: 7f424605-4a52-49d1-8836-5a5a1241a524
+		summarizeBy: sum
+		sourceColumn: sell_through_rate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column inventory_value_retail
+		dataType: double
+		lineageTag: f2736d48-59ff-4443-8334-d6921ec0fbb1
+		summarizeBy: sum
+		sourceColumn: inventory_value_retail
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column inventory_value_cost
+		dataType: double
+		lineageTag: 36409807-bfea-493a-a2bf-7b10bed76521
+		summarizeBy: sum
+		sourceColumn: inventory_value_cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column inventory_health
+		dataType: string
+		lineageTag: 15186f3e-96e9-4da8-bbcf-846006a6d281
+		summarizeBy: none
+		sourceColumn: inventory_health
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_inventory = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\fact_inventory.csv"), [Delimiter = ",", Columns = 15, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"snapshot_date", type date}, {"product_id", Int64.Type}, {"stock_on_hand", Int64.Type}, {"units_received", Int64.Type}, {"units_sold", Int64.Type}, {"stockout_days", Int64.Type}, {"days_of_supply", type number}, {"fill_rate", type number}, {"stockout_flag", Int64.Type}, {"overstock_flag", Int64.Type}, {"reorder_flag", Int64.Type}, {"sell_through_rate", type number}, {"inventory_value_retail", type number}, {"inventory_value_cost", type number}, {"inventory_health", type text}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

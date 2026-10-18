@@ -1,0 +1,53 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["fact_web_traffic","fact_shipments_enriched","fact_sales_daily","fact_returns_enriched","fact_orders_enriched","fact_orders","fact_inventory","dim_promotions","dim_products","dim_geography","dim_date","dim_customers_rfm","agg_reviews_summary","agg_monthly_summary","agg_cohort_retention"]
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
+
+ref table fact_web_traffic
+ref table DateTableTemplate_4a9b306d-984e-411f-b9e9-87996d069a6f
+ref table fact_shipments_enriched
+ref table LocalDateTable_d7344b1d-c89e-4833-b32f-6388845bdfae
+ref table fact_sales_daily
+ref table fact_returns_enriched
+ref table LocalDateTable_559033c9-879f-4f8f-a2db-e4fcb4b0ef93
+ref table LocalDateTable_de8237f3-8cff-4aa2-9b1f-f23fd0b17079
+ref table fact_orders_enriched
+ref table fact_orders
+ref table LocalDateTable_daf3cf55-53b0-4966-9aeb-c059ebe74908
+ref table fact_inventory
+ref table dim_promotions
+ref table LocalDateTable_bd2d4756-16a9-4f00-a042-000c8ac2a8d1
+ref table LocalDateTable_5c56771d-e586-4878-b954-b2ce59980947
+ref table dim_products
+ref table dim_geography
+ref table dim_date
+ref table LocalDateTable_529b760a-c679-428d-a449-c9f740b1b947
+ref table LocalDateTable_d8ca3495-2a16-4541-bc32-19d227e11289
+ref table LocalDateTable_7592bdb1-a04d-43b5-9019-490548c2aa35
+ref table dim_customers_rfm
+ref table LocalDateTable_8e19f469-30eb-4f54-826f-851dbafbdfe4
+ref table LocalDateTable_bc39cd73-9a23-4e21-af58-68f97384ac63
+ref table LocalDateTable_36337706-7c4c-436d-9469-f63516b881eb
+ref table LocalDateTable_6e554025-a1dc-475d-8982-4539d6956c1d
+ref table agg_reviews_summary
+ref table LocalDateTable_79598355-45ce-4e54-bef9-204f9b491111
+ref table LocalDateTable_7e8cdcc2-ed90-47b3-8e19-2a6678c52e35
+ref table agg_monthly_summary
+ref table LocalDateTable_b741cee1-cd18-450a-9c8b-e3e377fed55b
+ref table LocalDateTable_f14a10b0-aa62-4ddc-bd3d-41fd95ab8e9b
+ref table agg_cohort_retention
+ref table LocalDateTable_770990d3-c89c-4f8d-b5ac-b0098705210d
+ref table LocalDateTable_2ff52abc-18d9-4f41-88d4-f229e981d1a0
+ref table _KPI
+
+ref cultureInfo en-US

@@ -1,0 +1,109 @@
+table fact_web_traffic
+	lineageTag: 0b3b7d9c-8471-4227-8804-3c71f7206afd
+
+	column traffic_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: cd75e62c-df3d-4b9d-b359-8b1e2f76b8b4
+		summarizeBy: none
+		sourceColumn: traffic_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column sessions
+		dataType: int64
+		formatString: 0
+		lineageTag: eb9b5a81-60b5-4820-8f85-fc9d0928e47a
+		summarizeBy: sum
+		sourceColumn: sessions
+
+		annotation SummarizationSetBy = Automatic
+
+	column unique_visitors
+		dataType: int64
+		formatString: 0
+		lineageTag: f0a16958-247d-408f-be7d-bd5b5a8e72e1
+		summarizeBy: sum
+		sourceColumn: unique_visitors
+
+		annotation SummarizationSetBy = Automatic
+
+	column page_views
+		dataType: int64
+		formatString: 0
+		lineageTag: 2b13a64f-924b-4780-bdaf-e819479eea3a
+		summarizeBy: sum
+		sourceColumn: page_views
+
+		annotation SummarizationSetBy = Automatic
+
+	column bounce_rate
+		dataType: double
+		lineageTag: 1ca7f14a-9591-4db9-84e0-a7a413e7ba85
+		summarizeBy: sum
+		sourceColumn: bounce_rate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_session_duration_sec
+		dataType: double
+		lineageTag: 74aae351-178f-4ec9-bb93-832df7aa474c
+		summarizeBy: sum
+		sourceColumn: avg_session_duration_sec
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column traffic_source
+		dataType: string
+		lineageTag: 11e04641-e8e9-4f8b-b56a-1953a809b08e
+		summarizeBy: none
+		sourceColumn: traffic_source
+
+		annotation SummarizationSetBy = Automatic
+
+	column pages_per_session
+		dataType: double
+		lineageTag: bbb51bbd-ed31-40f5-96c8-e4bcb1847ddf
+		summarizeBy: sum
+		sourceColumn: pages_per_session
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column orders
+		dataType: int64
+		formatString: 0
+		lineageTag: 9eb498f9-a7d6-48e3-b267-9ceae9ad7df3
+		summarizeBy: sum
+		sourceColumn: orders
+
+		annotation SummarizationSetBy = Automatic
+
+	column conversion_rate_pct
+		dataType: double
+		lineageTag: 4242e484-205f-4e69-ad7a-6a439a01339a
+		summarizeBy: sum
+		sourceColumn: conversion_rate_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fact_web_traffic = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\fact_web_traffic.csv"), [Delimiter = ",", Columns = 10, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"traffic_date", type date}, {"sessions", Int64.Type}, {"unique_visitors", Int64.Type}, {"page_views", Int64.Type}, {"bounce_rate", type number}, {"avg_session_duration_sec", type number}, {"traffic_source", type text}, {"pages_per_session", type number}, {"orders", Int64.Type}, {"conversion_rate_pct", type number}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

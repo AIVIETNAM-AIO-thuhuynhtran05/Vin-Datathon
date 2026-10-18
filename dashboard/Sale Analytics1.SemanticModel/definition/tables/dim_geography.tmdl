@@ -1,0 +1,47 @@
+table dim_geography
+	lineageTag: 691d490b-b21d-4cbf-8960-8f2305812d92
+
+	column zip
+		dataType: int64
+		formatString: 0
+		lineageTag: 3aa5e676-0687-42dc-a93c-07a2cc4b7f46
+		summarizeBy: none
+		sourceColumn: zip
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: 5a572260-55b0-48ba-bfcb-e387a4df6ee8
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		lineageTag: 06fe5e36-80b7-4e8f-acb3-1bdd2ebcac28
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column district
+		dataType: string
+		lineageTag: 99529328-7834-4865-a328-7b23c4460e52
+		summarizeBy: none
+		sourceColumn: district
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_geography = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\dim_geography.csv"), [Delimiter = ",", Columns = 4, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"zip", Int64.Type}, {"city", type text}, {"region", type text}, {"district", type text}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,154 @@
+table fact_shipments_enriched
+	lineageTag: 1062504a-420d-4849-9f0f-3366ee52d13a
+
+	column order_id
+		dataType: int64
+		formatString: 0
+		lineageTag: cfece2ae-045f-4143-b58a-38c4f8309873
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column ship_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: f387d54a-ca47-46ae-890a-6dec26ee0e1b
+		summarizeBy: none
+		sourceColumn: ship_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column delivery_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c84b0a3f-857e-48c5-ac33-92a88998bba7
+		summarizeBy: none
+		sourceColumn: delivery_date
+
+		variation Variation
+			isDefault
+			relationship: 49587da6-f7b4-401f-8db8-15996da302ec
+			defaultHierarchy: LocalDateTable_d7344b1d-c89e-4833-b32f-6388845bdfae.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column shipping_fee
+		dataType: double
+		lineageTag: 83b7508c-83c7-479e-981b-9fa38ee8c18b
+		summarizeBy: sum
+		sourceColumn: shipping_fee
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column order_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: b51ccbe9-8c31-4473-9a1c-237022ffa474
+		summarizeBy: none
+		sourceColumn: order_date
+
+		variation Variation
+			isDefault
+			relationship: 750fc0e8-f874-40a6-9965-e08fcd5c73c9
+			defaultHierarchy: LocalDateTable_2ff52abc-18d9-4f41-88d4-f229e981d1a0.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column customer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 7104ae48-2aa6-4059-9815-835eb5a6aedc
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column zip
+		dataType: int64
+		formatString: 0
+		lineageTag: 067319eb-71ae-4518-9f08-b3cfa7506da4
+		summarizeBy: none
+		sourceColumn: zip
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_status
+		dataType: string
+		lineageTag: f04e690c-06f3-4120-a53b-37ef4e5e146b
+		summarizeBy: none
+		sourceColumn: order_status
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		lineageTag: f439ffe1-6226-496b-b8ad-2cb27338be78
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column processing_days
+		dataType: int64
+		formatString: 0
+		lineageTag: b1fd94c5-9643-48e3-bdca-3f2b4e3e8f1b
+		summarizeBy: sum
+		sourceColumn: processing_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivery_days
+		dataType: int64
+		formatString: 0
+		lineageTag: 8ee8fb63-4a88-44cc-88c4-2e198e2f7070
+		summarizeBy: sum
+		sourceColumn: delivery_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_lead_time
+		dataType: int64
+		formatString: 0
+		lineageTag: a1dfee44-05cf-4032-9b60-ce747884a83f
+		summarizeBy: sum
+		sourceColumn: total_lead_time
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivery_bucket
+		dataType: string
+		lineageTag: 3ff3f375-b069-4ce0-bb99-5d13069596fc
+		summarizeBy: none
+		sourceColumn: delivery_bucket
+
+		annotation SummarizationSetBy = Automatic
+
+	column delivery_bucket_order
+		dataType: int64
+		formatString: 0
+		lineageTag: 6854f6f7-5e08-4138-a6d1-974d3496b078
+		summarizeBy: sum
+		sourceColumn: delivery_bucket_order
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_shipments_enriched = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\fact_shipments_enriched.csv"), [Delimiter = ",", Columns = 14, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"order_id", Int64.Type}, {"ship_date", type date}, {"delivery_date", type date}, {"shipping_fee", type number}, {"order_date", type date}, {"customer_id", Int64.Type}, {"zip", Int64.Type}, {"order_status", type text}, {"region", type text}, {"processing_days", Int64.Type}, {"delivery_days", Int64.Type}, {"total_lead_time", Int64.Type}, {"delivery_bucket", type text}, {"delivery_bucket_order", Int64.Type}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,233 @@
+table fact_orders_enriched
+	lineageTag: 0d7fe12a-4fda-425b-95ef-4de84db94f37
+
+	column order_id
+		dataType: int64
+		formatString: 0
+		lineageTag: bfdd2096-8391-42a9-bd02-e42c19a5635d
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: e9ff164a-574c-4c49-a805-bc1ae8097010
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: c43ac8ed-7fae-4d64-b713-9d00a4ddf478
+		summarizeBy: sum
+		sourceColumn: quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit_price
+		dataType: double
+		lineageTag: 90b3aa1d-cb86-4c9a-bb8e-952546533495
+		summarizeBy: sum
+		sourceColumn: unit_price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column discount_amount
+		dataType: int64
+		formatString: 0
+		lineageTag: a03726f3-9530-43be-802c-a03be4158401
+		summarizeBy: sum
+		sourceColumn: discount_amount
+
+		annotation SummarizationSetBy = Automatic
+
+	column promo_id
+		dataType: string
+		lineageTag: 0fe2dd6b-bdcb-4088-b544-7fad83376cdb
+		summarizeBy: none
+		sourceColumn: promo_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column promo_id_2
+		dataType: string
+		lineageTag: 77b058f1-ae62-4bd3-8052-39c7f9a8104a
+		summarizeBy: none
+		sourceColumn: promo_id_2
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ac8ff6b2-ba25-498d-81cd-eeb8c16790ac
+		summarizeBy: none
+		sourceColumn: order_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column customer_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 0a549cea-f33d-4b99-90a8-c8078a32f208
+		summarizeBy: sum
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column zip
+		dataType: int64
+		formatString: 0
+		lineageTag: b65b9bf9-4465-4355-8832-9646d854a8ee
+		summarizeBy: sum
+		sourceColumn: zip
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_status
+		dataType: string
+		lineageTag: 60abe1f5-a68b-4828-86f0-d57e40bb499c
+		summarizeBy: none
+		sourceColumn: order_status
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_method
+		dataType: string
+		lineageTag: d6a99659-2710-4aa4-9325-c0db1361251d
+		summarizeBy: none
+		sourceColumn: payment_method
+
+		annotation SummarizationSetBy = Automatic
+
+	column device_type
+		dataType: string
+		lineageTag: 93787119-e463-46ed-801b-77e346f46c82
+		summarizeBy: none
+		sourceColumn: device_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_source
+		dataType: string
+		lineageTag: 256c527b-fb21-4e6b-8b92-2b438ca4b986
+		summarizeBy: none
+		sourceColumn: order_source
+
+		annotation SummarizationSetBy = Automatic
+
+	column line_revenue
+		dataType: double
+		lineageTag: 6db56eac-c2b2-4fff-aad5-fd2bf702a08a
+		summarizeBy: sum
+		sourceColumn: line_revenue
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column line_net_revenue
+		dataType: double
+		lineageTag: 4acbb043-b349-4860-9737-fe2fbe755f03
+		summarizeBy: sum
+		sourceColumn: line_net_revenue
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column line_cost
+		dataType: double
+		lineageTag: 7c35982d-3912-4b4f-929d-8392b04d36a9
+		summarizeBy: sum
+		sourceColumn: line_cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column line_gross_profit
+		dataType: double
+		lineageTag: df6a862e-c649-4ed6-9a54-18e9787add39
+		summarizeBy: sum
+		sourceColumn: line_gross_profit
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column line_margin_pct
+		dataType: double
+		lineageTag: fdfeee74-9ecc-4ec2-9113-55387cdfb088
+		summarizeBy: sum
+		sourceColumn: line_margin_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column has_promo
+		dataType: int64
+		formatString: 0
+		lineageTag: 49f47912-e8c4-4b0c-8e49-5e3030c12990
+		summarizeBy: sum
+		sourceColumn: has_promo
+
+		annotation SummarizationSetBy = Automatic
+
+	column discount_pct
+		dataType: int64
+		formatString: 0
+		lineageTag: ef869a4d-84eb-4763-9127-5618353340a6
+		summarizeBy: sum
+		sourceColumn: discount_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_revenue_order
+		dataType: int64
+		formatString: 0
+		lineageTag: 3e6afaf8-1781-4e80-a275-7fd6eaeacdbe
+		summarizeBy: sum
+		sourceColumn: is_revenue_order
+
+		annotation SummarizationSetBy = Automatic
+
+	column return_qty
+		dataType: int64
+		formatString: 0
+		lineageTag: 74f91424-2131-47ea-b9f6-aa2c992c6488
+		summarizeBy: sum
+		sourceColumn: return_qty
+
+		annotation SummarizationSetBy = Automatic
+
+	column refund_amount
+		dataType: double
+		lineageTag: f6eba531-5705-41a8-b2de-33158c1e9f39
+		summarizeBy: sum
+		sourceColumn: refund_amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fact_orders_enriched = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\fact_orders_enriched.csv"), [Delimiter = ",", Columns = 24, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"order_id", Int64.Type}, {"product_id", Int64.Type}, {"quantity", Int64.Type}, {"unit_price", type number}, {"discount_amount", Int64.Type}, {"promo_id", type text}, {"promo_id_2", type text}, {"order_date", type date}, {"customer_id", Int64.Type}, {"zip", Int64.Type}, {"order_status", type text}, {"payment_method", type text}, {"device_type", type text}, {"order_source", type text}, {"line_revenue", type number}, {"line_net_revenue", type number}, {"line_cost", type number}, {"line_gross_profit", type number}, {"line_margin_pct", type number}, {"has_promo", Int64.Type}, {"discount_pct", Int64.Type}, {"is_revenue_order", Int64.Type}, {"return_qty", Int64.Type}, {"refund_amount", type number}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

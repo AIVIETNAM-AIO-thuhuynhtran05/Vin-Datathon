@@ -1,0 +1,201 @@
+table agg_monthly_summary
+	lineageTag: 22f0ec31-c107-46a6-a08f-824d9284ae6f
+
+	column month
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 3132fce7-ecee-44a7-8c8e-7beeb51229ef
+		summarizeBy: none
+		sourceColumn: month
+
+		variation Variation
+			isDefault
+			relationship: 5ab730dc-10bd-477e-9c03-3edbfcbbcc1c
+			defaultHierarchy: LocalDateTable_b741cee1-cd18-450a-9c8b-e3e377fed55b.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column revenue
+		dataType: double
+		lineageTag: b5eb699a-3ac3-40c9-b791-2807534c3489
+		summarizeBy: sum
+		sourceColumn: revenue
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column cogs
+		dataType: double
+		lineageTag: d966d073-31d6-45c8-b3f2-cb4de3e7e3d5
+		summarizeBy: sum
+		sourceColumn: cogs
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column gross_profit
+		dataType: double
+		lineageTag: 71189959-b188-4279-bae1-fcdfc2f42cd5
+		summarizeBy: sum
+		sourceColumn: gross_profit
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_daily_rev
+		dataType: double
+		lineageTag: f4e8abb3-6674-45f6-860d-7b7087c64df4
+		summarizeBy: sum
+		sourceColumn: avg_daily_rev
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column days_in_month
+		dataType: int64
+		formatString: 0
+		lineageTag: e8ed2e7d-0557-41c5-9ce8-63ee6101419d
+		summarizeBy: sum
+		sourceColumn: days_in_month
+
+		annotation SummarizationSetBy = Automatic
+
+	column orders
+		dataType: int64
+		formatString: 0
+		lineageTag: a93699f3-cb0a-4503-a608-3b3dcdb220df
+		summarizeBy: sum
+		sourceColumn: orders
+
+		annotation SummarizationSetBy = Automatic
+
+	column customers
+		dataType: int64
+		formatString: 0
+		lineageTag: ef60ee31-bd58-4f8b-a52d-5976246c2158
+		summarizeBy: sum
+		sourceColumn: customers
+
+		annotation SummarizationSetBy = Automatic
+
+	column new_customers
+		dataType: int64
+		formatString: 0
+		lineageTag: fd8c545b-69cc-4276-95f4-fae5409092ea
+		summarizeBy: sum
+		sourceColumn: new_customers
+
+		annotation SummarizationSetBy = Automatic
+
+	column net_payment
+		dataType: double
+		lineageTag: bec76ecf-1e6e-4c04-b246-fc4c860d179e
+		summarizeBy: sum
+		sourceColumn: net_payment
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column sessions
+		dataType: int64
+		formatString: 0
+		lineageTag: 35d606f5-a3ed-42ed-992b-0fc1ccc13bb6
+		summarizeBy: sum
+		sourceColumn: sessions
+
+		annotation SummarizationSetBy = Automatic
+
+	column gross_margin_pct
+		dataType: double
+		lineageTag: c0abb22c-0f30-4537-a59f-b7a8a8784c72
+		summarizeBy: sum
+		sourceColumn: gross_margin_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column aov
+		dataType: double
+		lineageTag: 7c25d8bc-bd44-4bf7-b9f4-4b56a3cd7ccb
+		summarizeBy: sum
+		sourceColumn: aov
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column revenue_prev
+		dataType: double
+		lineageTag: 074fa777-4a6e-402f-93ca-837ef7f46906
+		summarizeBy: sum
+		sourceColumn: revenue_prev
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column mom_growth_pct
+		dataType: double
+		lineageTag: 18af8cb9-1e8c-44c7-bc3d-41d534b4db58
+		summarizeBy: sum
+		sourceColumn: mom_growth_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column revenue_ly
+		dataType: double
+		lineageTag: d90a01d8-285c-4e55-9bbd-bd544a34aa89
+		summarizeBy: sum
+		sourceColumn: revenue_ly
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column yoy_growth_pct
+		dataType: double
+		lineageTag: 0b5adf96-2cc9-4bb8-8774-48e7411e08fd
+		summarizeBy: sum
+		sourceColumn: yoy_growth_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column year_month
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: a0178c69-ea10-4bf1-8343-5ef1e98d6505
+		summarizeBy: none
+		sourceColumn: year_month
+
+		variation Variation
+			isDefault
+			relationship: cf63cabf-34a6-4101-862a-602981f65650
+			defaultHierarchy: LocalDateTable_f14a10b0-aa62-4ddc-bd3d-41fd95ab8e9b.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition agg_monthly_summary = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\agg_monthly_summary.csv"), [Delimiter = ",", Columns = 18, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"month", type date}, {"revenue", type number}, {"cogs", type number}, {"gross_profit", type number}, {"avg_daily_rev", type number}, {"days_in_month", Int64.Type}, {"orders", Int64.Type}, {"customers", Int64.Type}, {"new_customers", Int64.Type}, {"net_payment", type number}, {"sessions", Int64.Type}, {"gross_margin_pct", type number}, {"aov", type number}, {"revenue_prev", type number}, {"mom_growth_pct", type number}, {"revenue_ly", type number}, {"yoy_growth_pct", type number}, {"year_month", type date}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

@@ -14,7 +14,7 @@ Doanh nghiệp tăng trưởng đến khoảng năm 2016 rồi suy giảm suốt
 | # | Câu hỏi kinh doanh | Cụ thể | Phần trả lời |
 |---:|---|---|---|
 | 1 | **Điều gì đã xảy ra?** | Doanh thu, số đơn, biên lợi nhuận, khách hàng và lượng truy cập biến động thế nào từ 2012, và suy giảm bắt đầu từ đâu? | [1. EDA](#1-eda--chất-lượng-dữ-liệu), [2. Dashboard](#2-dashboard) (trang Executive Overview) |
-| 2 | **Vì sao xảy ra?** | Suy giảm do thiếu traffic, chuyển đổi kém, khách không quay lại, khuyến mãi, tồn kho, hay giao hàng và trả hàng? | [2. Dashboard](#2-dashboard) (trang Customer, Sales & Promotion, Inventory, Logistics & Returns) |
+| 2 | **Vì sao xảy ra?** | Suy giảm do thiếu traffic, chuyển đổi kém, khách không quay lại, khuyến mãi, tồn kho, hay giao hàng và trả hàng? | [2. Dashboard](#2-dashboard) (trang Customer Insights, Product & Promotion, Inventory, Logistics & Returns) |
 | 3 | **Nên tập trung vào ai?** | Nhóm khách nào mang về doanh thu, nhóm nào đã im lặng, nhóm nào chưa từng mua? | [3. Phân nhóm khách hàng](#3-phân-nhóm-khách-hàng) |
 | 4 | **Sắp tới sẽ ra sao?** | Doanh thu từng ngày từ 01/2023 đến 07/2024 là bao nhiêu, để lên kế hoạch tồn kho, khuyến mãi và giao hàng? | [4. Dự báo doanh thu](#4-dự-báo-doanh-thu) |
 | 5 | **Nên làm gì?** | Hành động nào làm trước, cho nhóm khách nào, và KPI nào cho biết hành động đó có hiệu quả? | Recommendation ở [mục 3](#recommendation) và [mục 4](#recommendation-1), [`dashboard_analysis_recommendations.md`](reports/markdown/dashboard_analysis_recommendations.md) |
@@ -55,10 +55,13 @@ Doanh nghiệp tăng trưởng đến khoảng năm 2016 rồi suy giảm suốt
 ├── dashboard/
 │   ├── README.md                        # Cấu trúc 5 trang, mô hình dữ liệu, KPI & phân tích
 │   ├── prepare_powerbi_data.py          # Dựng star schema 15 bảng (dim/fact/agg) cho Power BI
-│   └── Ecommerce_Dashboard.pbix         # Chỉ lưu local, không đưa lên Git
+│   ├── Sale Analytics1.pbip             # Điểm mở dự án Power BI
+│   ├── Sale Analytics1.Report/          # Báo cáo tương tác 5 trang
+│   ├── Sale Analytics1.SemanticModel/   # Mô hình TMDL và 46 KPI measures
+│   └── *.pbix                           # Chỉ lưu local, không đưa lên Git
 ├── reports/                             # Báo cáo PDF — mỗi phần một file
 │   ├── 01_EDA_report.pdf                # EDA & chất lượng dữ liệu
-│   ├── 02_Dashboard_report.pdf          # (chờ dựng lại dashboard)
+│   ├── 02_Dashboard_report.pdf          # Báo cáo dashboard
 │   ├── 03_Customer_Segmentation_report.pdf
 │   ├── 04_Forecasting_report.pdf        # Dự báo doanh thu
 │   ├── build_reports.py                 # Dựng PDF từ Markdown
@@ -186,19 +189,19 @@ Trang Overview trả lời doanh thu giảm là do yếu tố nào: traffic, CR 
 | Trang | Câu hỏi | Nội dung chính |
 |---|---|---|
 | Executive Overview | Doanh nghiệp đang lên hay xuống, vì sao? | KPI so với năm trước, cây KPI, xu hướng 2012–2022 |
-| Customer | Khách có mua và có quay lại không? | Funnel khách đăng ký → khách đã mua, cohort retention theo tháng đơn đầu tiên, phân khúc RFM từ phần 3 |
-| Sales & Promotion | Tiền và lãi đến từ đâu, khuyến mãi có hiệu quả không? | Category và margin, AOV và margin khi có hoặc không có khuyến mãi |
+| Customer Insights | Khách có mua và có quay lại không? | Funnel khách đăng ký → khách đã mua, cohort retention theo tháng đơn đầu tiên, phân khúc RFM từ phần 3 |
+| Product & Promotion | Sản phẩm nào tạo doanh thu và lợi nhuận, khuyến mãi có hiệu quả không? | Category và margin, AOV và margin khi có hoặc không có khuyến mãi |
 | Inventory | Tồn kho có cân với nhu cầu không? | DOS đã sửa công thức, stockout/overstock, hàng chậm bán (DOS > 365 ngày) |
 | Logistics & Returns | Hàng có đến nơi, có bị trả lại không? | Thời gian giao theo vùng, lý do trả hàng, Wrong Size theo sản phẩm |
 
-**Biến đổi dữ liệu** — [`dashboard/prepare_powerbi_data.py`](dashboard/prepare_powerbi_data.py): Python + pandas đọc `data/raw/`, dựng **star schema** (5 dim, 7 fact, 3 bảng tổng hợp) và ghi ra `data/processed/powerbi/`. Power BI chỉ import rồi tạo quan hệ và measure DAX.
+**Biến đổi dữ liệu** — [`dashboard/prepare_powerbi_data.py`](dashboard/prepare_powerbi_data.py): Python + pandas đọc `data/raw/`, dựng **star schema** (5 dim, 7 fact, 3 bảng tổng hợp) và ghi ra `data/processed/powerbi/`. PBIP chứa semantic model, quan hệ và KPI DAX; các CSV nguồn không được đưa lên GitHub.
 
 1. Nạp 13 file CSV gốc, chỉ đọc. Một số file lưu ngày dạng `dd/mm/yyyy`, số còn lại `yyyy-mm-dd`; script tự nhận định dạng theo từng cột.
 2. Dựng bảng dim: bảng lịch `dim_date`; sản phẩm kèm margin, điểm đánh giá trung bình, tỷ lệ trả; khách hàng kèm vùng, điểm và nhãn RFM, tháng cohort, phân khúc K-Means từ phần 3 (nếu đã chạy).
 3. Dựng bảng fact, mỗi bảng đúng một grain: đơn (`fact_orders`: thanh toán, phí ship, tiền hoàn, đơn mới/mua lại), dòng hàng (`fact_orders_enriched`: doanh thu, giảm giá, giá vốn, lãi gộp), trả hàng, vận chuyển (số ngày xử lý, số ngày giao, nhóm thời gian giao), doanh thu ngày (MA7/MA30, YoY), tồn kho tháng (giá trị tồn, nhãn tình trạng), web traffic ngày (trang/phiên, tỷ lệ chuyển đổi).
 4. RFM, cohort, khách mới/mua lại và tỷ lệ chuyển đổi chỉ tính đơn `paid`/`shipped`/`delivered`/`returned`, giống phần 3. Bảng fact vẫn giữ mọi trạng thái (kèm cờ `is_revenue_order`) để tính tỷ lệ hủy.
 5. Tổng hợp sẵn các góc nhìn khó làm bằng DAX: KPI theo tháng kèm MoM/YoY, ma trận cohort retention (tháng 0–24), điểm đánh giá theo tháng × danh mục.
-6. Data modeling trong Power BI: đánh dấu `dim_date` là Date Table; quan hệ 1-nhiều một chiều từ dim sang fact; mọi measure DAX nằm trong bảng `_Measures`. Không nối fact với fact (qua `order_id`) và không nối `dim_geography` với `dim_customers_rfm`, để mỗi bộ lọc chỉ có một đường đi (tránh lỗi ambiguous path).
+6. Data modeling trong Power BI: đánh dấu `dim_date` là Date Table; quan hệ 1-nhiều một chiều từ dim sang fact; 46 KPI DAX nằm trong bảng `_KPI`. Không nối fact với fact (qua `order_id`) và không nối `dim_geography` với `dim_customers_rfm`, để mỗi bộ lọc chỉ có một đường đi (tránh lỗi ambiguous path).
 
 **Đầu ra (15 file CSV):**
 
@@ -225,7 +228,8 @@ Trang Overview trả lời doanh thu giảm là do yếu tố nào: traffic, CR 
 
 Sơ đồ quan hệ (star schema), các quyết định mô hình, định nghĩa từng KPI và công thức: [`dashboard/README.md`](dashboard/README.md).
 
-- **Power BI:** `dashboard/Ecommerce_Dashboard.pbix` — file nặng (~110 MB) nên chỉ lưu local, không đưa lên GitHub.
+- **Power BI report (PBIP):** [`dashboard/Sale Analytics1.pbip`](dashboard/Sale%20Analytics1.pbip) — dự án gồm 5 trang tương tác: Executive Overview, Customer Insights, Product & Promotion, Inventory Health và Logistics & Returns. 46 DAX KPI measures nằm trong bảng `_KPI`.
+- **Mở và refresh:** mở file PBIP bằng Power BI Desktop. Dữ liệu raw/processed và PBIX không được commit; để refresh, chạy `python dashboard/prepare_powerbi_data.py` sau khi có dữ liệu đầu vào, rồi cập nhật các đường dẫn `File.Contents` trong semantic model cho vị trí các CSV của bạn.
 - **Phân tích & khuyến nghị:** [`reports/markdown/dashboard_analysis_recommendations.md`](reports/markdown/dashboard_analysis_recommendations.md)
 
 ## 3. Phân nhóm khách hàng

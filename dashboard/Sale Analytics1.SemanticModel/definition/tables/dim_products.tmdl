@@ -1,0 +1,169 @@
+table dim_products
+	lineageTag: 11fc5929-4458-4a20-b92d-2192bfab2b08
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 33228591-ddfd-4a93-b790-6e7c613df75d
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_name
+		dataType: string
+		lineageTag: 7b89dfb9-9094-46c0-b462-34372910cd23
+		summarizeBy: none
+		sourceColumn: product_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column category
+		dataType: string
+		lineageTag: 86cc848f-a0a9-40b2-a3b6-3910c900f874
+		summarizeBy: none
+		sourceColumn: category
+
+		annotation SummarizationSetBy = Automatic
+
+	column segment
+		dataType: string
+		lineageTag: 88eb85d6-b0f4-40ba-a85f-d73bb28b5cb2
+		summarizeBy: none
+		sourceColumn: segment
+
+		annotation SummarizationSetBy = Automatic
+
+	column size
+		dataType: string
+		lineageTag: e770d6c7-2294-4f48-b64e-f36775d1e210
+		summarizeBy: none
+		sourceColumn: size
+
+		annotation SummarizationSetBy = Automatic
+
+	column color
+		dataType: string
+		lineageTag: b81e9f3d-4d23-4590-b01f-740080c96cab
+		summarizeBy: none
+		sourceColumn: color
+
+		annotation SummarizationSetBy = Automatic
+
+	column price
+		dataType: double
+		lineageTag: 7f679780-5127-4d81-8b3b-437850c43ee4
+		summarizeBy: sum
+		sourceColumn: price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column cogs
+		dataType: double
+		lineageTag: 360f5100-5d8a-4bf7-af3d-930959f41016
+		summarizeBy: sum
+		sourceColumn: cogs
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column gross_margin_pct
+		dataType: double
+		lineageTag: c0286f42-6db0-4611-aaae-7a9ea3ad6049
+		summarizeBy: sum
+		sourceColumn: gross_margin_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column profit_per_unit
+		dataType: double
+		lineageTag: ed98d7b5-f947-4740-ab8c-27764cfdb398
+		summarizeBy: sum
+		sourceColumn: profit_per_unit
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_rating
+		dataType: double
+		lineageTag: c199778a-0852-47dd-9206-85c698092985
+		summarizeBy: sum
+		sourceColumn: avg_rating
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column review_count
+		dataType: int64
+		formatString: 0
+		lineageTag: 6ad07189-bfe3-4f17-919e-7a3b5899719c
+		summarizeBy: sum
+		sourceColumn: review_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_returns
+		dataType: int64
+		formatString: 0
+		lineageTag: c732d74f-50f0-4120-ac04-68fa802140ae
+		summarizeBy: sum
+		sourceColumn: total_returns
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_return_qty
+		dataType: int64
+		formatString: 0
+		lineageTag: bfc4d9db-08d1-414c-99a0-fea6e7b64ccc
+		summarizeBy: sum
+		sourceColumn: total_return_qty
+
+		annotation SummarizationSetBy = Automatic
+
+	column total_refund
+		dataType: double
+		lineageTag: 3dca6620-a7c1-4111-bcaf-cbaff344e877
+		summarizeBy: sum
+		sourceColumn: total_refund
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column total_sold_qty
+		dataType: int64
+		formatString: 0
+		lineageTag: 46c0f322-3634-4529-9691-86a1b01f7611
+		summarizeBy: sum
+		sourceColumn: total_sold_qty
+
+		annotation SummarizationSetBy = Automatic
+
+	column return_rate_pct
+		dataType: double
+		lineageTag: da9540a5-5dd8-4eff-a353-856cfb1e83e4
+		summarizeBy: sum
+		sourceColumn: return_rate_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition dim_products = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("D:\AnhThu_Porfolio\Vin-Datathon\data\processed\powerbi\dim_products.csv"), [Delimiter = ",", Columns = 17, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"product_id", Int64.Type}, {"product_name", type text}, {"category", type text}, {"segment", type text}, {"size", type text}, {"color", type text}, {"price", type number}, {"cogs", type number}, {"gross_margin_pct", type number}, {"profit_per_unit", type number}, {"avg_rating", type number}, {"review_count", Int64.Type}, {"total_returns", Int64.Type}, {"total_return_qty", Int64.Type}, {"total_refund", type number}, {"total_sold_qty", Int64.Type}, {"return_rate_pct", type number}})
+				in
+				  #"Changed column type"
+
+	annotation PBI_ResultType = Table

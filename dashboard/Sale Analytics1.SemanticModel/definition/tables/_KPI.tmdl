@@ -1,0 +1,243 @@
+/// Dedicated home for report KPI measures.
+table _KPI
+	lineageTag: b0b4c656-fefe-4152-8663-701272bd7a58
+
+	/// Total revenue from the daily sales aggregate.
+	measure Revenue = SUM('fact_sales_daily'[revenue])
+		formatString: #,##0.00
+		lineageTag: 8ec3ce76-b0d5-4f19-bda9-1fc9bd014fd0
+
+	/// Total gross profit from the daily sales aggregate.
+	measure 'Gross Profit' = SUM('fact_sales_daily'[gross_profit])
+		formatString: #,##0.00
+		lineageTag: f4a8f14b-bf29-4683-abc0-c765f7909240
+
+	/// Distinct revenue-generating orders in the current filter context.
+	measure Orders = CALCULATE(DISTINCTCOUNT('fact_orders_enriched'[order_id]), 'fact_orders_enriched'[is_revenue_order] = 1)
+		formatString: #,##0
+		lineageTag: 0ad26dc8-5be4-4c57-9ffd-0f8480066442
+
+	/// Distinct customers with a revenue-generating order.
+	measure Buyers = CALCULATE(DISTINCTCOUNT('fact_orders_enriched'[customer_id]), 'fact_orders_enriched'[is_revenue_order] = 1)
+		formatString: #,##0
+		lineageTag: 6473f087-5234-4819-9b1c-6e0b396031c5
+
+	/// Total website sessions in the current filter context.
+	measure Sessions = SUM('fact_web_traffic'[sessions])
+		formatString: #,##0
+		lineageTag: 4e81b21c-3220-4dd8-a1d3-ec5ef4c5a3bb
+
+	/// Orders divided by website sessions.
+	measure 'Conversion Rate' = DIVIDE([Orders], [Sessions])
+		formatString: 0.00%
+		lineageTag: 5d2ec8d0-879c-452b-8138-61dce4cb9f74
+
+	/// Revenue change versus the same date period in the prior year.
+	measure 'YoY Revenue Growth' = VAR PriorYearRevenue = CALCULATE([Revenue], DATEADD('dim_date'[date], -1, YEAR)) RETURN DIVIDE([Revenue] - PriorYearRevenue, PriorYearRevenue)
+		formatString: 0.00%
+		lineageTag: c46526e9-c6a0-48b9-b287-6fb6c994988f
+
+	/// Distinct customers in the customer dimension.
+	measure Customers = DISTINCTCOUNT('dim_customers_rfm'[customer_id])
+		formatString: #,##0
+		lineageTag: e5a2344d-acad-429f-938e-3e0fb86958f7
+
+	/// Revenue-generating buyers divided by registered customers.
+	measure 'Buyer Rate' = DIVIDE([Buyers], [Customers])
+		formatString: 0.00%
+		lineageTag: 10f6a222-d974-47f7-aa73-8bad55cd021d
+
+	/// Share of customers with at least two orders among customers who have ordered.
+	measure 'Repeat Rate' = VAR RepeatCustomers = CALCULATE(DISTINCTCOUNT('dim_customers_rfm'[customer_id]), 'dim_customers_rfm'[total_orders] >= 2) VAR BuyingCustomers = CALCULATE(DISTINCTCOUNT('dim_customers_rfm'[customer_id]), 'dim_customers_rfm'[total_orders] > 0) RETURN DIVIDE(RepeatCustomers, BuyingCustomers)
+		formatString: 0.00%
+		lineageTag: 734bd58d-198a-4c12-8353-1bc0164dae2c
+
+	/// Weighted month-one cohort retention: active customers divided by cohort size for period one.
+	measure 'Month +1 Retention' = VAR ActiveCustomers = CALCULATE(SUM('agg_cohort_retention'[active_customers]), 'agg_cohort_retention'[period_number] = 1) VAR CohortCustomers = CALCULATE(SUM('agg_cohort_retention'[cohort_size]), 'agg_cohort_retention'[period_number] = 1) RETURN DIVIDE(ActiveCustomers, CohortCustomers)
+		formatString: 0.00%
+		lineageTag: bf96cac3-e899-405b-bd46-4f9e861c357a
+
+	/// Average lifetime monetary value per customer from the RFM customer table.
+	measure 'Customer LTV' = AVERAGE('dim_customers_rfm'[monetary])
+		formatString: #,##0.00
+		lineageTag: a7f06438-1532-4a73-82c7-5be25a4e0fb2
+
+	/// Average days since the customer's last order.
+	measure Recency = AVERAGE('dim_customers_rfm'[recency_days])
+		formatString: #,##0.0
+		lineageTag: ab0661ae-193d-4d34-9a37-72a20c9aa8d4
+
+	/// Net revenue from revenue-generating order lines divided by revenue-generating orders.
+	measure AOV = DIVIDE(CALCULATE(SUM('fact_orders_enriched'[line_net_revenue]), 'fact_orders_enriched'[is_revenue_order] = 1), [Orders])
+		formatString: #,##0.00
+		lineageTag: 55b6554c-b2a6-4ca4-86b3-da95c2937604
+
+	/// Gross profit divided by revenue.
+	measure 'Gross Margin %' = DIVIDE([Gross Profit], [Revenue])
+		formatString: 0.00%
+		lineageTag: aa4ae86f-8bd9-4e3a-a1d3-3a189ce55648
+
+	/// Distinct revenue-generating orders with at least one promotional order line.
+	measure 'Promo Orders' = CALCULATE(DISTINCTCOUNT('fact_orders_enriched'[order_id]), KEEPFILTERS('fact_orders_enriched'[has_promo] = 1), 'fact_orders_enriched'[is_revenue_order] = 1)
+		formatString: #,##0
+		lineageTag: 3f15fdca-b5bb-48f9-b18e-f6df9eb975bc
+
+	/// Orders with a promotional line divided by all distinct orders.
+	measure 'Promo Share' = DIVIDE([Promo Orders], [Orders])
+		formatString: 0.00%
+		lineageTag: 39d6b1ee-4903-4cda-a553-3babe2e0c13c
+
+	/// Net revenue on promotional order lines for revenue-generating orders.
+	measure 'Promo Revenue' = CALCULATE(SUM('fact_orders_enriched'[line_net_revenue]), KEEPFILTERS('fact_orders_enriched'[has_promo] = 1), 'fact_orders_enriched'[is_revenue_order] = 1)
+		formatString: #,##0.00
+		lineageTag: d31a209f-c15b-4f4d-bd4a-d16840f0733b
+
+	/// Net revenue on non-promotional order lines for revenue-generating orders.
+	measure 'Non-Promo Revenue' = CALCULATE(SUM('fact_orders_enriched'[line_net_revenue]), KEEPFILTERS('fact_orders_enriched'[has_promo] = 0), 'fact_orders_enriched'[is_revenue_order] = 1)
+		formatString: #,##0.00
+		lineageTag: 71c4cca3-a8b6-457f-a63b-d7ba5b74905c
+
+	/// Promotional net revenue divided by promotional orders.
+	measure 'Promo AOV' = DIVIDE([Promo Revenue], [Promo Orders])
+		formatString: #,##0.00
+		lineageTag: 27d869ee-a907-4bad-a58a-5cb2a5b0ebfe
+
+	/// Non-promotional net revenue divided by revenue-generating non-promotional orders.
+	measure 'Non-Promo AOV' = DIVIDE([Non-Promo Revenue], CALCULATE(DISTINCTCOUNT('fact_orders_enriched'[order_id]), KEEPFILTERS('fact_orders_enriched'[has_promo] = 0), 'fact_orders_enriched'[is_revenue_order] = 1))
+		formatString: #,##0.00
+		lineageTag: f4b66691-b8d9-44e5-bfea-af7c9d6a0208
+
+	/// Promotional AOV minus non-promotional AOV.
+	measure 'Promo AOV Gap' = [Promo AOV] - [Non-Promo AOV]
+		formatString: #,##0.00
+		lineageTag: 72a19eff-358f-4589-88b7-d19ac7f87013
+
+	/// Discount amount divided by pre-discount line revenue for revenue-generating orders.
+	measure 'Discount Rate' = DIVIDE(CALCULATE(SUM('fact_orders_enriched'[discount_amount]), 'fact_orders_enriched'[is_revenue_order] = 1), CALCULATE(SUM('fact_orders_enriched'[line_revenue]), 'fact_orders_enriched'[is_revenue_order] = 1))
+		formatString: 0.00%
+		lineageTag: a1eac0f4-377c-4f36-9e11-40781eaab612
+
+	/// Units sold per revenue-generating distinct order.
+	measure 'Cart Size' = DIVIDE(CALCULATE(SUM('fact_orders_enriched'[quantity]), 'fact_orders_enriched'[is_revenue_order] = 1), [Orders])
+		formatString: #,##0.00
+		lineageTag: 03650e4d-fa9d-47b0-ae1c-6a0140d1efa5
+
+	/// Stock on hand at the latest inventory snapshot in the current filter context.
+	measure 'Stock On Hand' = VAR LatestSnapshot = MAX('fact_inventory'[snapshot_date]) RETURN CALCULATE(SUM('fact_inventory'[stock_on_hand]), KEEPFILTERS('fact_inventory'[snapshot_date] = LatestSnapshot))
+		formatString: #,##0
+		lineageTag: 1f2482a5-5c0e-4446-96d7-d9888a35c8e1
+
+	/// Inventory units sold divided by the number of snapshot dates in context.
+	measure 'Avg Daily Units Sold' = DIVIDE(SUM('fact_inventory'[units_sold]), DISTINCTCOUNT('fact_inventory'[snapshot_date]))
+		formatString: #,##0.00
+		lineageTag: 1765010b-079d-45c5-8912-575a28399299
+
+	/// Latest stock on hand divided by average daily units sold.
+	measure 'Days of Supply' = DIVIDE([Stock On Hand], [Avg Daily Units Sold])
+		formatString: #,##0.0
+		lineageTag: 29c89f7e-81f9-469e-8210-db3deda0b038
+
+	/// Units received divided by units sold in the selected inventory period.
+	measure 'R/S Ratio' = DIVIDE(SUM('fact_inventory'[units_received]), SUM('fact_inventory'[units_sold]))
+		formatString: 0.00
+		lineageTag: ee952cbc-5e61-429f-bace-25b39475e43b
+
+	/// Share of product-months with at least one stockout day in the current filter context.
+	measure 'Stockout Rate' = VAR ProductMonths = SUMMARIZE(ADDCOLUMNS('fact_inventory', "__Month", FORMAT('fact_inventory'[snapshot_date], "YYYYMM")), 'fact_inventory'[product_id], [__Month], "HasStockout", MAX('fact_inventory'[stockout_flag])) RETURN DIVIDE(SUMX(ProductMonths, [HasStockout]), COUNTROWS(ProductMonths))
+		formatString: 0.00%
+		lineageTag: cb58059e-d7ec-488b-9296-e11c748fe023
+
+	/// Share of product-months with at least one overstock day in the current filter context.
+	measure 'Overstock Rate' = VAR ProductMonths = SUMMARIZE(ADDCOLUMNS('fact_inventory', "__Month", FORMAT('fact_inventory'[snapshot_date], "YYYYMM")), 'fact_inventory'[product_id], [__Month], "HasOverstock", MAX('fact_inventory'[overstock_flag])) RETURN DIVIDE(SUMX(ProductMonths, [HasOverstock]), COUNTROWS(ProductMonths))
+		formatString: 0.00%
+		lineageTag: 5cdd6e7d-470b-4933-aba9-11cf84c4a7a4
+
+	/// Units sold divided by units sold plus latest stock on hand.
+	measure Sell-through = DIVIDE(SUM('fact_inventory'[units_sold]), SUM('fact_inventory'[units_sold]) + [Stock On Hand])
+		formatString: 0.00%
+		lineageTag: 3faa75ba-cb9c-4626-8fb3-d7161866f413
+
+	/// Latest stock on hand with more than 365 days of supply divided by latest stock on hand.
+	measure 'Slow Stock Rate' = DIVIDE(CALCULATE([Stock On Hand], 'fact_inventory'[days_of_supply] > 365), [Stock On Hand])
+		formatString: 0.00%
+		lineageTag: 058af25c-7f7f-4422-9135-19a004620af8
+
+	/// Average delivery duration in days.
+	measure 'Delivery Days' = AVERAGE('fact_shipments_enriched'[delivery_days])
+		formatString: #,##0.0
+		lineageTag: 6c5313c7-303e-4493-b4a5-2cb7c5dda4f1
+
+	/// Average order processing time before shipment.
+	measure 'Order-to-Ship Days' = AVERAGE('fact_shipments_enriched'[processing_days])
+		formatString: #,##0.0
+		lineageTag: 11cd55d2-b1a4-4db6-a974-a9b18b4810af
+
+	/// Canceled distinct orders divided by all distinct orders, including canceled orders.
+	measure 'Cancel Rate' = VAR CanceledOrders = CALCULATE(DISTINCTCOUNT('fact_orders_enriched'[order_id]), FILTER('fact_orders_enriched', CONTAINSSTRING(LOWER('fact_orders_enriched'[order_status]), "cancel"))) VAR AllOrders = DISTINCTCOUNT('fact_orders_enriched'[order_id]) RETURN DIVIDE(CanceledOrders, AllOrders)
+		formatString: 0.00%
+		lineageTag: 95015ab8-f87b-4cd4-9844-b5555e9ab234
+
+	/// Distinct returned orders divided by delivered orders.
+	measure 'Return Rate' = VAR ReturnedOrders = DISTINCTCOUNT('fact_returns_enriched'[order_id]) VAR DeliveredOrders = CALCULATE(DISTINCTCOUNT('fact_shipments_enriched'[order_id]), FILTER('fact_shipments_enriched', CONTAINSSTRING(LOWER('fact_shipments_enriched'[order_status]), "deliver"))) RETURN DIVIDE(ReturnedOrders, DeliveredOrders)
+		formatString: 0.00%
+		lineageTag: 48248c9e-4ff9-4812-b842-fb8abe030160
+
+	/// Distinct return records with a size-related reason divided by all return records.
+	measure 'Wrong Size Share' = VAR WrongSizeReturns = CALCULATE(DISTINCTCOUNT('fact_returns_enriched'[return_id]), FILTER('fact_returns_enriched', CONTAINSSTRING(LOWER('fact_returns_enriched'[return_reason]), "size"))) RETURN DIVIDE(WrongSizeReturns, DISTINCTCOUNT('fact_returns_enriched'[return_id]))
+		formatString: 0.00%
+		lineageTag: bab4a46f-91a6-4a98-995a-0ec4c963fd1f
+
+	/// Net revenue from revenue-generating order lines, filterable by product and category.
+	measure 'Product Revenue' = CALCULATE(SUM('fact_orders_enriched'[line_net_revenue]), 'fact_orders_enriched'[is_revenue_order] = 1)
+		formatString: #,##0.00
+		lineageTag: 5a3cd250-87f9-4513-9a34-0ab020ec1838
+
+	/// Gross profit from revenue-generating order lines, filterable by product and category.
+	measure 'Product Gross Profit' = CALCULATE(SUM('fact_orders_enriched'[line_gross_profit]), 'fact_orders_enriched'[is_revenue_order] = 1)
+		formatString: #,##0.00
+		lineageTag: 31596270-3ed0-4c69-9eff-56ce8db279ad
+
+	/// Product gross profit divided by product net revenue.
+	measure 'Product Gross Margin %' = DIVIDE([Product Gross Profit], [Product Revenue])
+		formatString: 0.00%
+		lineageTag: e10daa80-b9ae-4f2b-a67e-3962858baae4
+
+	/// Units sold on revenue-generating order lines.
+	measure 'Units Sold' = CALCULATE(SUM('fact_orders_enriched'[quantity]), 'fact_orders_enriched'[is_revenue_order] = 1)
+		formatString: #,##0
+		lineageTag: c3bbe9ef-0e94-4c5f-8d78-6682e166d17e
+
+	/// Count of products with negative gross profit in the current filter context.
+	measure 'Loss-making Products' = COUNTROWS(FILTER(VALUES('dim_products'[product_id]), CALCULATE([Product Gross Profit]) < 0))
+		formatString: #,##0
+		lineageTag: 107bdadc-5a19-42b6-8c23-c2b333fc5838
+
+	/// Average lifetime number of orders per customer from the RFM customer dimension.
+	measure 'Purchase Frequency' = AVERAGE('dim_customers_rfm'[frequency])
+		formatString: #,##0.00
+		lineageTag: d52c5abf-62e3-4685-b035-3a2d06582c30
+
+	/// Distinct orders represented in shipment records.
+	measure 'Shipment Orders' = DISTINCTCOUNT('fact_shipments_enriched'[order_id])
+		formatString: #,##0
+		lineageTag: 936b9986-d676-4a0c-ad0e-0e898d5d1ed3
+
+	/// Total shipping fees in the current filter context.
+	measure 'Total Shipping Cost' = SUM('fact_shipments_enriched'[shipping_fee])
+		formatString: #,##0.00
+		lineageTag: b321581a-4b04-47e5-9b16-05422969f721
+
+	/// Distinct returned orders in the current filter context.
+	measure 'Returned Orders' = DISTINCTCOUNT('fact_returns_enriched'[order_id])
+		formatString: #,##0
+		lineageTag: a94cf63e-c32a-48f3-9f4d-ec9ee9205d44
+
+	column Placeholder
+		isHidden
+		lineageTag: b9ffb331-7a5b-47d0-a8e6-ec59756781ed
+		isNameInferred
+		sourceColumn: [Placeholder]
+
+	partition _KPI = calculated
+		mode: import
+		source = DATATABLE("Placeholder", STRING, {{"KPI"}})
