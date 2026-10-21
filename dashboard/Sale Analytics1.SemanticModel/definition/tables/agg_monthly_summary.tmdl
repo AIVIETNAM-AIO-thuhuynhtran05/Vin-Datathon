@@ -199,3 +199,4 @@ table agg_monthly_summary
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+

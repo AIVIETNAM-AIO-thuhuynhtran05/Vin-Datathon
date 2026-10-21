@@ -113,3 +113,4 @@ table LocalDateTable_770990d3-c89c-4f8d-b5ac-b0098705210d
 		source = Calendar(Date(Year(MIN('agg_cohort_retention'[cohort_month])), 1, 1), Date(Year(MAX('agg_cohort_retention'[cohort_month])), 12, 31))
 
 	annotation __PBI_LocalDateTable = true
+

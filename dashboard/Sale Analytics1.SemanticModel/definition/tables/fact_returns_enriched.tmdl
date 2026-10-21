@@ -151,3 +151,4 @@ table fact_returns_enriched
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+

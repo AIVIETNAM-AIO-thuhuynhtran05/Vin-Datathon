@@ -167,3 +167,4 @@ table dim_products
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+

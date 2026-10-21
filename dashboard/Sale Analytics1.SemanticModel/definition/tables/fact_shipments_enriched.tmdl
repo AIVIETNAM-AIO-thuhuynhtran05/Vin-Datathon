@@ -152,3 +152,4 @@ table fact_shipments_enriched
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+

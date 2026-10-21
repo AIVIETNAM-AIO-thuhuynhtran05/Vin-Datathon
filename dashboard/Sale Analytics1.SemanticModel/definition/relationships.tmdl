@@ -195,3 +195,4 @@ relationship 40d1069f-c9b9-d005-aaba-92a7112627e6
 relationship a968d829-fd30-61a3-4008-4c4a86a9d61d
 	fromColumn: fact_orders_enriched.promo_id
 	toColumn: dim_promotions.promo_id
+

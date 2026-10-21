@@ -208,3 +208,4 @@ table fact_orders
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+

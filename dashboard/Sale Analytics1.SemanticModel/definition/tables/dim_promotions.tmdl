@@ -111,3 +111,4 @@ table dim_promotions
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+

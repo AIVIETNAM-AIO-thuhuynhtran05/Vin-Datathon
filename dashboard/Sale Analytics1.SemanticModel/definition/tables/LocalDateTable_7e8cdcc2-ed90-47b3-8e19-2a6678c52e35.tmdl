@@ -113,3 +113,4 @@ table LocalDateTable_7e8cdcc2-ed90-47b3-8e19-2a6678c52e35
 		source = Calendar(Date(Year(MIN('agg_reviews_summary'[year_month])), 1, 1), Date(Year(MAX('agg_reviews_summary'[year_month])), 12, 31))
 
 	annotation __PBI_LocalDateTable = true
+

@@ -241,3 +241,4 @@ table _KPI
 	partition _KPI = calculated
 		mode: import
 		source = DATATABLE("Placeholder", STRING, {{"KPI"}})
+

@@ -113,3 +113,4 @@ table LocalDateTable_7592bdb1-a04d-43b5-9019-490548c2aa35
 		source = Calendar(Date(Year(MIN('dim_date'[month_start])), 1, 1), Date(Year(MAX('dim_date'[month_start])), 12, 31))
 
 	annotation __PBI_LocalDateTable = true
+

@@ -113,3 +113,4 @@ table LocalDateTable_559033c9-879f-4f8f-a2db-e4fcb4b0ef93
 		source = Calendar(Date(Year(MIN('fact_returns_enriched'[order_date])), 1, 1), Date(Year(MAX('fact_returns_enriched'[order_date])), 12, 31))
 
 	annotation __PBI_LocalDateTable = true
+

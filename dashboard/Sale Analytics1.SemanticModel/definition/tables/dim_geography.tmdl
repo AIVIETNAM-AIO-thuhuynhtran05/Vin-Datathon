@@ -45,3 +45,4 @@ table dim_geography
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+

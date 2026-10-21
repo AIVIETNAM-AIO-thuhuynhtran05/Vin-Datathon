@@ -231,3 +231,4 @@ table fact_orders_enriched
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+

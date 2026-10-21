@@ -107,3 +107,4 @@ table fact_web_traffic
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+

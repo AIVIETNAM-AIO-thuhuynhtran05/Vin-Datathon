@@ -251,3 +251,4 @@ table dim_customers_rfm
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+

@@ -99,3 +99,4 @@ table fact_sales_daily
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+

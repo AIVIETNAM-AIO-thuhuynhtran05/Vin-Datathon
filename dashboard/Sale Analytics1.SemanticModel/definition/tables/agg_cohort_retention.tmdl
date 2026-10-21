@@ -74,3 +74,4 @@ table agg_cohort_retention
 				  #"Changed column type"
 
 	annotation PBI_ResultType = Table
+
